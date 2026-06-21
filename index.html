@@ -57,6 +57,14 @@
 
   /* Toolbar */
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);padding:12px;border-radius:var(--radius);border:1px solid var(--border);}
+  .lang-btn{
+    font-family:var(--font-body);font-size:14px;padding:9px 18px;
+    border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--ink);cursor:pointer;
+    font-weight:500;transition:all .15s;display:flex;align-items:center;gap:8px;
+  }
+  .lang-btn:hover{background:var(--bg);}
+  .lang-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
   .field{padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:var(--font-body);font-size:14px;background:var(--bg);color:var(--ink);}
   .toolbar input[type=search]{flex:1 1 180px;}
   .toolbar select{flex:0 1 150px;}
@@ -73,21 +81,8 @@
   .icon-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;border-radius:5px;color:var(--muted);}
   .icon-btn:hover{background:var(--bg);color:var(--ink);}
 
-  /* Table */
-  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:14px;min-width:920px;}
-  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:13px 14px;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap;}
-  td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover td{background:var(--bg);}
-  .mono{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);}
-  .tag{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:500;}
-  .pkg-name{font-weight:500;display:block;}
-  .pkg-speed{font-size:11px;color:var(--muted);display:block;}
-
   /* Signal status */
-  .status-cell{display:inline-flex;align-items:center;gap:9px;cursor:pointer;}
-  .signal{display:inline-flex;align-items:flex-end;gap:2px;height:15px;}
+  .signal{display:inline-flex;align-items:flex-end;gap:2px;height:14px;}
   .signal span{width:3px;border-radius:1px;background:var(--border);display:block;}
   .signal span:nth-child(1){height:35%;}
   .signal span:nth-child(2){height:58%;}
@@ -95,11 +90,157 @@
   .signal span:nth-child(4){height:100%;}
   .signal.active span{background:var(--success);}
   .signal.inactive span:nth-child(1){background:var(--danger);}
+
+  /* Card grid */
+  .cards-wrap{display:flex;flex-direction:column;gap:0;}
+  .cards-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    padding:0;
+  }
+
+  /* Each card is 100% on mobile/tablet, ~50% on laptop */
+  .customer-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    flex: 1 1 100%;
+  }
+  @media(min-width:1024px){
+    .customer-card{ flex: 1 1 calc(50% - 7px); max-width:calc(50% - 7px); }
+  }
+
+  /* Card face — always visible */
+  .card-face{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+  }
+  .card-face:hover{ background:var(--bg); }
+
+  .card-avatar-wrap{
+    position:relative;flex-shrink:0;
+    width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    padding:3px;
+  }
+  .card-avatar-wrap.active{ box-shadow:0 0 0 2.5px var(--success); }
+  .card-avatar-wrap.inactive{ box-shadow:0 0 0 2.5px var(--danger); }
+  .card-avatar{
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:15px;font-weight:600;
+  }
+  .card-main{ flex:1; min-width:0; }
+  .card-name{
+    font-size:15px;font-weight:600;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .card-id{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:1px;
+  }
+  .card-price{
+    font-family:var(--font-body);font-size:14px;font-weight:500;
+    color:#2A2825;white-space:nowrap;flex-shrink:0;
+    text-transform:uppercase;letter-spacing:.12em;
+  }
+  .card-chevron{
+    flex-shrink:0;margin-left:6px;
+    display:flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--bg);border:1px solid var(--border);
+    transition:background .2s, border-color .2s;
+  }
+  .card-chevron svg{ display:block; transition:transform .25s ease; }
+  .customer-card.open .card-chevron{ background:var(--primary); border-color:var(--primary); }
+  .customer-card.open .card-chevron svg{ transform:rotate(180deg); }
+  .customer-card.open .card-chevron svg path{ stroke:#fff; }
+
+  /* Status dot on card face */
+  .card-status-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+    background:var(--border);
+  }
+  .card-status-dot.active{ background:var(--success); }
+  .card-status-dot.inactive{ background:var(--danger); }
+
+  /* Dropdown drawer */
+  .card-drawer{
+    overflow:hidden;
+    height:0;
+    transition:height .3s cubic-bezier(.4,0,.2,1);
+    border-top:0px solid var(--border);
+  }
+  .customer-card.open .card-drawer{
+    border-top-width:1px;
+  }
+  .drawer-inner{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+
+  .drawer-body{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .drawer-village{ display:flex; align-items:flex-start; padding-top:2px; }
+  .drawer-rows{display:flex;flex-direction:column;gap:7px;flex:1;}
+  .drawer-row{display:flex;align-items:center;font-size:13.5px;}
+  .drawer-row-label{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;width:70px;}
+  .drawer-row-colon{color:var(--muted);margin:0 7px;align-self:center;line-height:1;}
+  .drawer-row-value{color:var(--ink);}
+  .drawer-row-value.mono{font-family:var(--font-mono);font-size:12.5px;}
+
+
+
+
+
+
+
+
+  .phone-copy{
+    display:inline-flex;align-items:center;gap:6px;
+    cursor:pointer;position:relative;
+    border-radius:5px;padding:2px 6px;margin:-2px -6px;
+    transition:background .15s;
+  }
+  .phone-copy:hover{ background:var(--bg); }
+  .copy-icon{
+    opacity:0;transition:opacity .15s;
+    display:flex;align-items:center;
+  }
+  .phone-copy:hover .copy-icon{ opacity:1; }
+  .copy-toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;font-size:13px;font-family:var(--font-body);
+    padding:8px 16px;border-radius:99px;pointer-events:none;
+    opacity:0;transition:opacity .2s;z-index:999;white-space:nowrap;
+  }
+  .copy-toast.show{ opacity:1; }
+
+  /* Status toggle row */
+  .drawer-status{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 12px;border-radius:7px;background:var(--bg);
+    cursor:pointer;width:fit-content;
+  }
+  .drawer-status:hover{ background:var(--border); }
   .status-label{font-size:12.5px;font-weight:500;}
   .status-label.active{color:var(--success);}
   .status-label.inactive{color:var(--danger);}
 
-  .actions-cell{text-align:right;}
+
+  .drawer-actions{display:flex;justify-content:space-between;align-items:center;margin-top:2px;}
+  .drawer-btn{
+    font-family:var(--font-body);font-size:13px;padding:7px 14px;
+    border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--ink);cursor:pointer;
+    font-weight:500;transition:background .14s;
+  }
+  .drawer-btn:hover{background:var(--bg);}
+  .drawer-btn.danger{color:var(--danger);border-color:var(--danger-soft);}
+  .drawer-btn.danger:hover{background:var(--danger-soft);}
 
   .empty-state{padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;}
   .hidden{display:none !important;}
@@ -170,19 +311,16 @@
       <option value="inactive">Inactive</option>
     </select>
     <span class="spacer"></span>
+    <button class="lang-btn" id="teluguBtn" onclick="toggleTelugu()">
+      <span id="teluguBtnIcon">అ</span>
+      <span id="teluguBtnText">Show in Telugu</span>
+    </button>
     <button class="btn btn-secondary" id="managePackagesBtn">Packages</button>
     <button class="btn btn-primary" id="addCustomerBtn">+ Add customer</button>
   </section>
 
-  <section class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Name</th><th>Phone</th><th>Village</th><th>Package</th><th>Price</th><th>Status</th><th>Expires</th><th></th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+  <section class="cards-wrap">
+    <div class="cards-grid" id="cardsGrid"></div>
     <p class="empty-state hidden" id="emptyState">No connections match your filters.</p>
   </section>
 
@@ -287,6 +425,8 @@
   </div>
 </div>
 
+<div class="copy-toast" id="copyToast">Copied!</div>
+
 <script>
 /* ---------------------------------------------------------------
    Starter data — replace by loading from GitHub once connected
@@ -337,7 +477,7 @@ function b64ToUtf8(str){ return decodeURIComponent(escape(atob(str))); }
 function render(){
   buildVillageColors();
   populateFilterOptions();
-  renderTable();
+  renderCards();
   updateStats();
 }
 
@@ -377,42 +517,99 @@ function getFilteredCustomers(){
   });
 }
 
-function renderTable(){
-  const tbody = document.getElementById('tableBody');
+function renderCards(){
+  const grid = document.getElementById('cardsGrid');
   const empty = document.getElementById('emptyState');
   const list = getFilteredCustomers();
 
   if (list.length === 0){
-    tbody.innerHTML = '';
+    grid.innerHTML = '';
     empty.classList.remove('hidden');
     return;
   }
   empty.classList.add('hidden');
 
-  tbody.innerHTML = list.map(c=>{
+  grid.innerHTML = list.map(c=>{
     const pkg = getPackage(c.packageId);
     const vc = villageColorMap[c.village] || VILLAGE_PALETTE[0];
     const isActive = c.status === 'active';
-    return `<tr>
-      <td class="mono">${escapeHtml(c.id)}</td>
-      <td>${escapeHtml(c.name)}</td>
-      <td class="mono">${escapeHtml(c.phone)}</td>
-      <td><span class="tag" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(c.village)}</span></td>
-      <td>${pkg ? `<span class="pkg-name">${escapeHtml(pkg.name)}</span><span class="pkg-speed">${escapeHtml(pkg.speed)}</span>` : '<span class="pkg-name">—</span>'}</td>
-      <td>${pkg ? formatINR(pkg.price) : '—'}</td>
-      <td>
-        <span class="status-cell" onclick="toggleStatus('${c.id}')" title="Click to toggle active / inactive">
-          <span class="signal ${isActive ? 'active' : 'inactive'}"><span></span><span></span><span></span><span></span></span>
-          <span class="status-label ${isActive ? 'active' : 'inactive'}">${isActive ? 'Active' : 'Inactive'}</span>
-        </span>
-      </td>
-      <td class="mono">${escapeHtml(c.expiryDate || '—')}</td>
-      <td class="actions-cell">
-        <button class="icon-btn" onclick="openCustomerModal('${c.id}')" title="Edit">✎</button>
-        <button class="icon-btn" onclick="deleteCustomer('${c.id}')" title="Delete">🗑</button>
-      </td>
-    </tr>`;
+    const initials = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const price = pkg ? formatINR(pkg.price) : '—';
+    const pkgLabel = pkg ? `${escapeHtml(pkg.name)} · ${escapeHtml(pkg.speed)}` : '—';
+
+    return `<div class="customer-card" id="card-${c.id}">
+      <div class="card-face" onclick="toggleCard('${c.id}')">
+        <div class="card-avatar-wrap ${isActive ? 'active' : 'inactive'}">
+          <div class="card-avatar" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(initials)}</div>
+        </div>
+        <div class="card-main">
+          <div class="card-name">${escapeHtml(getDisplayName(c))}</div>
+          <div class="card-id">${price}</div>
+        </div>
+        <div class="card-price">
+          <span class="phone-copy" onclick="event.stopPropagation();copyPhone('${escapeHtml(c.id)}')" title="Copy ID">
+            ${escapeHtml(c.id)}
+            <span class="copy-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="4.5" width="7" height="7" rx="1.2" stroke="#8C8579" stroke-width="1.3"/><path d="M3 8.5H2A1.5 1.5 0 0 1 .5 7V2A1.5 1.5 0 0 1 2 .5h5A1.5 1.5 0 0 1 8.5 2v1" stroke="#8C8579" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          </span>
+        </div>
+        <span class="card-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4L6 8L10 4" stroke="#8C8579" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="card-drawer">
+        <div class="drawer-inner">
+          <div class="drawer-body">
+            <div class="drawer-rows">
+              <div class="drawer-row">
+                <span class="drawer-row-label">Package</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value">${pkg ? escapeHtml(pkg.name) : '—'}</span>
+              </div>
+              <div class="drawer-row">
+                <span class="drawer-row-label">Price</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value">${pkg ? formatINR(pkg.price) : '—'}</span>
+              </div>
+              <div class="drawer-row">
+                <span class="drawer-row-label">Phone</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value mono">${escapeHtml(c.phone)}</span>
+              </div>
+            </div>
+            <div class="drawer-village">
+              <span class="tag" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(c.village)}</span>
+            </div>
+          </div>
+          <div class="drawer-actions">
+            <button class="drawer-btn" onclick="openCustomerModal('${c.id}')">✎ Edit</button>
+            <button class="drawer-btn danger" onclick="deleteCustomer('${c.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="3.5" x2="11" y2="3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/><line x1="3" y1="10.5" x2="11" y2="10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/></svg> Strike out</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
   }).join('');
+}
+
+function toggleCard(id){
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  const drawer = card.querySelector('.card-drawer');
+  const isOpen = card.classList.contains('open');
+
+  if (isOpen){
+    // closing: animate from scrollHeight down to 0
+    drawer.style.height = drawer.scrollHeight + 'px';
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{ drawer.style.height = '0'; });
+    });
+    card.classList.remove('open');
+  } else {
+    // opening: animate from 0 up to scrollHeight
+    card.classList.add('open');
+    drawer.style.height = drawer.scrollHeight + 'px';
+    drawer.addEventListener('transitionend', function onEnd(){
+      drawer.style.height = 'auto';
+      drawer.removeEventListener('transitionend', onEnd);
+    }, { once: true });
+  }
 }
 
 function updateStats(){
@@ -432,6 +629,39 @@ function updateStats(){
   document.getElementById('statInactive').textContent = inactive;
   document.getElementById('statVillages').textContent = villages;
   document.getElementById('statRevenue').textContent = formatINR(revenue);
+}
+
+/* ---------------------------------------------------------------
+   Telugu toggle
+--------------------------------------------------------------- */
+let teluguMode = false;
+
+function toggleTelugu(){
+  const btn = document.getElementById('teluguBtn');
+  const btnText = document.getElementById('teluguBtnText');
+
+  teluguMode = !teluguMode;
+
+  if (teluguMode){
+    // Ensure every customer has a telugu_name. Any customer missing one
+    // gets the placeholder "అ" so it can be edited in later.
+    let added = false;
+    appData.customers.forEach(c=>{
+      if (!c.telugu_name){
+        c.telugu_name = 'అ';
+        added = true;
+      }
+    });
+    if (added) markDirty();
+  }
+
+  btn.classList.toggle('active', teluguMode);
+  btnText.textContent = teluguMode ? 'Show in English' : 'Show in Telugu';
+  render();
+}
+
+function getDisplayName(c){
+  return teluguMode && c.telugu_name ? c.telugu_name : c.name;
 }
 
 /* ---------------------------------------------------------------
@@ -773,14 +1003,36 @@ function exportJson(){
   URL.revokeObjectURL(url);
 }
 
+function copyPhone(phone){
+  navigator.clipboard.writeText(phone).then(()=>{
+    const toast = document.getElementById('copyToast');
+    toast.textContent = phone + ' copied!';
+    toast.classList.add('show');
+    clearTimeout(copyPhone._t);
+    copyPhone._t = setTimeout(()=>toast.classList.remove('show'), 2000);
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = phone;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const toast = document.getElementById('copyToast');
+    toast.textContent = phone + ' copied!';
+    toast.classList.add('show');
+    clearTimeout(copyPhone._t);
+    copyPhone._t = setTimeout(()=>toast.classList.remove('show'), 2000);
+  });
+}
+
 /* ---------------------------------------------------------------
    Wiring
 --------------------------------------------------------------- */
 function bindEvents(){
-  document.getElementById('searchInput').addEventListener('input', renderTable);
-  document.getElementById('villageFilter').addEventListener('change', renderTable);
-  document.getElementById('packageFilter').addEventListener('change', renderTable);
-  document.getElementById('statusFilter').addEventListener('change', renderTable);
+  document.getElementById('searchInput').addEventListener('input', renderCards);
+  document.getElementById('villageFilter').addEventListener('change', renderCards);
+  document.getElementById('packageFilter').addEventListener('change', renderCards);
+  document.getElementById('statusFilter').addEventListener('change', renderCards);
 
   document.getElementById('addCustomerBtn').addEventListener('click', ()=>openCustomerModal());
   document.getElementById('cancelCustomerBtn').addEventListener('click', closeCustomerModal);
