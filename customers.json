@@ -2,40 +2,45 @@
   "packages": [
     {
       "id": "pkg1",
-      "name": "Basic",
-      "speed": "25 Mbps",
-      "price": 399
+      "name": "Budget",
+      "price": 280
     },
     {
       "id": "pkg2",
-      "name": "Standard",
-      "speed": "50 Mbps",
-      "price": 599
+      "name": "Ultimate",
+      "price": 300
     },
     {
       "id": "pkg3",
-      "name": "Premium",
-      "speed": "100 Mbps",
-      "price": 899
+      "name": "single",
+      "price": 250
     },
     {
       "id": "pkg4",
       "name": "Ultra",
-      "speed": "200 Mbps",
       "price": 1299
     }
   ],
   "customers": [
     {
-      "id": "C0001",
-      "name": "Dinesh Murthy",
-      "phone": "6896233790",
-      "village": "Poonamallee",
+      "id": "70532498915",
+      "name": "Dhoraswamy",
+      "phone": "00000 00000",
+      "village": "Singamaala",
       "packageId": "pkg1",
       "status": "active",
-      "joinDate": "2025-02-22",
-      "expiryDate": "2026-02-22",
-      "telugu_name": "అ"
+      "telugu_name": "ధోరస్వామి",
+      "Village name": "సింగమాల"
+    },
+    {
+      "id": "AC2008322369",
+      "name": "Sasikala",
+      "phone": "00000 00000",
+      "village": "Singamaala",
+      "packageId": "pkg1",
+      "status": "active",
+      "telugu_name": "శశికల",
+      "Village name": "సింగమాల"
     },
     {
       "id": "C0002",
