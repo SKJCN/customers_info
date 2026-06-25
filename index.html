@@ -57,6 +57,1172 @@
 
   /* Toolbar */
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);padding:12px;border-radius:var(--radius);border:1px solid var(--border);}
+  /* Language toggle pill (dark/light mode style) */
+  .lang-toggle{
+    display:inline-flex;align-items:center;
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:99px;padding:3px;gap:2px;
+    flex-shrink:0;
+  }
+  .lang-option{
+    font-family:var(--font-body);font-size:13px;font-weight:500;
+    padding:6px 14px;border-radius:99px;border:none;
+    cursor:pointer;transition:all .2s;line-height:1.2;
+    background:transparent;color:var(--muted);
+  }
+  .lang-option.lang-active{
+    background:var(--primary);color:#fff;
+    box-shadow:0 1px 4px rgba(30,74,69,.25);
+    cursor:default;
+  }
+  .lang-option:not(.lang-active):hover{
+    background:var(--border);color:var(--ink);
+  }
+  .field{padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:var(--font-body);font-size:14px;background:var(--bg);color:var(--ink);}
+  .toolbar input[type=search]{flex:1 1 180px;}
+  .toolbar select{flex:0 1 150px;}
+  .spacer{flex:1;}
+
+  /* Buttons */
+  .btn{font-family:var(--font-body);font-size:14px;padding:9px 18px;border-radius:7px;border:1px solid transparent;cursor:pointer;font-weight:500;transition:all .15s;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-light);}
+  .btn-secondary{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent);}
+  .btn-secondary:hover{background:#f7dcb3;}
+  .btn-ghost{background:transparent;color:var(--muted);border-color:var(--border);}
+  .btn-ghost:hover{background:var(--bg);color:var(--ink);}
+  .icon-btn{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;border-radius:5px;color:var(--muted);}
+  .icon-btn:hover{background:var(--bg);color:var(--ink);}
+
+  /* Signal status */
+  .signal{display:inline-flex;align-items:flex-end;gap:2px;height:14px;}
+  .signal span{width:3px;border-radius:1px;background:var(--border);display:block;}
+  .signal span:nth-child(1){height:35%;}
+  .signal span:nth-child(2){height:58%;}
+  .signal span:nth-child(3){height:80%;}
+  .signal span:nth-child(4){height:100%;}
+  .signal.active span{background:var(--success);}
+  .signal.inactive span:nth-child(1){background:var(--danger);}
+
+  /* Card grid */
+  .cards-wrap{display:flex;flex-direction:column;gap:0;}
+  .cards-grid{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-start;
+    gap:14px;
+    padding:0;
+  }
+
+  /* Each card is 100% on mobile/tablet, ~50% on laptop */
+  .customer-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    flex: 1 1 100%;
+  }
+  @media(min-width:1024px){
+    .customer-card{ flex: 1 1 calc(50% - 7px); max-width:calc(50% - 7px); }
+  }
+
+  /* Card face — always visible */
+  .card-face{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+  }
+  .card-face:hover{ background:var(--bg); }
+
+  .card-avatar-wrap{
+    position:relative;flex-shrink:0;
+    width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    padding:3px;
+  }
+  .card-avatar-wrap.active{ box-shadow:0 0 0 2.5px var(--success); }
+  .card-avatar-wrap.inactive{ box-shadow:0 0 0 2.5px var(--danger); }
+  .card-avatar{
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:15px;font-weight:600;
+  }
+  .card-main{ flex:1; min-width:0; }
+  .card-name{
+    font-size:15px;font-weight:600;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .card-id{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:1px;
+  }
+  .card-price{
+    font-family:var(--font-body);font-size:14px;font-weight:500;
+    color:#2A2825;white-space:nowrap;flex-shrink:0;
+    text-transform:uppercase;letter-spacing:.12em;
+  }
+  .card-chevron{
+    flex-shrink:0;margin-left:6px;
+    display:flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--bg);border:1px solid var(--border);
+    transition:background .2s, border-color .2s;
+  }
+  .card-chevron svg{ display:block; transition:transform .25s ease; }
+  .customer-card.open .card-chevron{ background:var(--primary); border-color:var(--primary); }
+  .customer-card.open .card-chevron svg{ transform:rotate(180deg); }
+  .customer-card.open .card-chevron svg path{ stroke:#fff; }
+
+  /* Status dot on card face */
+  .card-status-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+    background:var(--border);
+  }
+  .card-status-dot.active{ background:var(--success); }
+  .card-status-dot.inactive{ background:var(--danger); }
+
+  /* Dropdown drawer */
+  .card-drawer{
+    overflow:hidden;
+    height:0;
+    transition:height .3s cubic-bezier(.4,0,.2,1);
+    border-top:0px solid var(--border);
+  }
+  .customer-card.open .card-drawer{
+    border-top-width:1px;
+  }
+  .drawer-inner{padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+
+  .drawer-body{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .drawer-village{ display:flex; align-items:flex-start; padding-top:2px; }
+  .drawer-rows{display:flex;flex-direction:column;gap:7px;flex:1;}
+  .drawer-row{display:flex;align-items:center;font-size:13.5px;}
+  .drawer-row-label{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;width:70px;}
+  .drawer-row-colon{color:var(--muted);margin:0 7px;align-self:center;line-height:1;}
+  .drawer-row-value{color:var(--ink);}
+  .drawer-row-value.mono{font-family:var(--font-mono);font-size:12.5px;}
+
+
+
+
+
+
+
+
+  .phone-copy{
+    display:inline-flex;align-items:center;gap:6px;
+    cursor:pointer;position:relative;
+    border-radius:5px;padding:2px 6px;margin:-2px -6px;
+    transition:background .15s;
+  }
+  .phone-copy:hover{ background:var(--bg); }
+  .copy-icon{
+    opacity:0;transition:opacity .15s;
+    display:flex;align-items:center;
+  }
+  .phone-copy:hover .copy-icon{ opacity:1; }
+
+  /* Clickable phone number → dial */
+  .phone-link{
+    color:var(--primary);text-decoration:none;font-family:var(--font-mono);font-size:12.5px;
+    display:inline-flex;align-items:center;gap:4px;
+    border-radius:5px;padding:2px 6px;margin:-2px -6px;
+    transition:background .15s, color .15s;
+  }
+  .phone-link:hover{background:var(--success-soft);color:var(--success);}
+  .copy-toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;font-size:13px;font-family:var(--font-body);
+    padding:8px 16px;border-radius:99px;pointer-events:none;
+    opacity:0;transition:opacity .2s;z-index:999;white-space:nowrap;
+  }
+  .copy-toast.show{ opacity:1; }
+
+  /* Status toggle row */
+  .drawer-status{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 12px;border-radius:7px;background:var(--bg);
+    cursor:pointer;width:fit-content;
+  }
+  .drawer-status:hover{ background:var(--border); }
+  .status-label{font-size:12.5px;font-weight:500;}
+  .status-label.active{color:var(--success);}
+  .status-label.inactive{color:var(--danger);}
+
+
+  .drawer-actions{display:flex;justify-content:space-between;align-items:center;margin-top:2px;}
+  .drawer-btn{
+    font-family:var(--font-body);font-size:13px;padding:7px 14px;
+    border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--ink);cursor:pointer;
+    font-weight:500;transition:background .14s;
+  }
+  .drawer-btn:hover{background:var(--bg);}
+  .drawer-btn.danger{color:var(--danger);border-color:var(--danger-soft);}
+  .drawer-btn.danger:hover{background:var(--danger-soft);}
+
+  .empty-state{padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;}
+  .hidden{display:none !important;}
+
+  /* Modals */
+  .modal-overlay{position:fixed;inset:0;background:rgba(40,35,28,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:26px;max-width:580px;width:100%;max-height:88vh;overflow-y:auto;}
+  .modal h2{font-family:var(--font-display);margin:0;color:var(--primary);font-size:22px;font-weight:600;}
+  .hint{font-size:13px;color:var(--muted);margin:8px 0;line-height:1.5;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+  .form-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:500;}
+  .form-grid label.full{grid-column:1/-1;}
+  .form-grid input,.form-grid select,.form-grid textarea{font-family:var(--font-body);padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:14px;color:var(--ink);background:var(--bg);}
+  .form-grid textarea{resize:vertical;min-height:60px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;flex-wrap:wrap;}
+
+  .pkg-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;gap:10px;}
+  .pkg-row:last-child{border-bottom:none;}
+
+  .gh-log{font-family:var(--font-mono);font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px;min-height:40px;max-height:120px;overflow-y:auto;color:var(--muted);white-space:pre-wrap;margin-top:4px;}
+  .gh-log.error{color:var(--danger);}
+
+  @media (max-width:640px){
+    body{padding:14px;}
+    .form-grid{grid-template-columns:1fr;}
+    .modal{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="21" width="6" height="12" rx="1.5" fill="#E08E2C"/>
+        <rect x="11" y="15" width="6" height="18" rx="1.5" fill="#1E4A45"/>
+        <rect x="20" y="9" width="6" height="24" rx="1.5" fill="#1E4A45"/>
+        <rect x="29" y="3" width="6" height="30" rx="1.5" fill="#E08E2C"/>
+      </svg>
+      <div>
+        <h1>Sri Kamakshi Jagan <br>Cable Network</h1>
+        <p><b>ACT</b> Cable connection register</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="sync-pill" id="fileSyncStatus">Loading customers.json…</span>
+      <span class="sync-pill" id="syncStatus">Not connected to GitHub</span>
+      <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none;">
+      <button class="btn btn-ghost" id="loadJsonBtn" title="Pick the customers.json file from your computer">📂 Load JSON file</button>
+      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json from this page's folder">↻ Reload</button>
+      <button class="btn btn-ghost" id="exportBtn">⬇ Export JSON</button>
+      <button class="btn btn-ghost" id="settingsBtn">⚙ GitHub sync</button>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <div class="stat-card"><span class="stat-value" id="statTotal">0</span><span class="stat-label">Total connections</span></div>
+    <div class="stat-card"><span class="stat-value" id="statActive">0</span><span class="stat-label">Active</span></div>
+    <div class="stat-card"><span class="stat-value" id="statInactive">0</span><span class="stat-label">Inactive</span></div>
+    <div class="stat-card"><span class="stat-value" id="statVillages">0</span><span class="stat-label">Villages</span></div>
+    <div class="stat-card"><span class="stat-value" id="statRevenue">₹0</span><span class="stat-label">Monthly revenue (active)</span></div>
+  </section>
+
+  <section class="toolbar">
+    <input class="field" type="search" id="searchInput" placeholder="Search name, phone or ID…">
+    <select class="field" id="villageFilter"></select>
+    <select class="field" id="packageFilter"></select>
+    <select class="field" id="statusFilter">
+      <option value="">All status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <span class="spacer"></span>
+    <div class="lang-toggle" id="langToggle">
+      <button class="lang-option" id="langEnBtn" onclick="setLang('en')" title="Show in English">in English</button>
+      <button class="lang-option lang-active" id="langTeBtn" onclick="setLang('te')" title="తెలుగులో చూపించు">తెలుగు లో</button>
+    </div>
+    <button class="btn btn-secondary" id="managePackagesBtn">Packages</button>
+    <button class="btn btn-primary" id="addCustomerBtn">+ Add customer</button>
+  </section>
+
+  <section class="cards-wrap">
+    <div class="cards-grid" id="cardsGrid"></div>
+    <p class="empty-state hidden" id="emptyState">No connections match your filters.</p>
+  </section>
+
+</div>
+
+<!-- Add / Edit customer modal -->
+<div class="modal-overlay hidden" id="customerModal">
+  <div class="modal">
+    <h2 id="customerModalTitle">Add customer</h2>
+    <form id="customerForm">
+      <div class="form-grid">
+        <label>Name
+          <input type="text" id="custName" required>
+        </label>
+        <label>Phone
+          <input type="tel" id="custPhone" required pattern="[0-9]{10}" title="10 digit mobile number">
+        </label>
+        <label>Village
+          <input type="text" id="custVillage" list="villageList" required>
+          <datalist id="villageList"></datalist>
+        </label>
+        <label>Package
+          <select id="custPackage"></select>
+        </label>
+        <label>Status
+          <select id="custStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+        <label>Joined
+          <input type="date" id="custJoin">
+        </label>
+        <label>Expires
+          <input type="date" id="custExpiry">
+        </label>
+        <label class="full">Address / notes
+          <textarea id="custAddress"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancelCustomerBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save customer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Packages modal -->
+<div class="modal-overlay hidden" id="packagesModal">
+  <div class="modal">
+    <h2>Manage packages</h2>
+    <p class="hint">Package changes apply to every customer assigned to that package.</p>
+    <div id="packagesList"></div>
+    <div class="form-grid">
+      <label>Name
+        <input type="text" id="pkgName" placeholder="e.g. Standard">
+      </label>
+      <label>Speed
+        <input type="text" id="pkgSpeed" placeholder="e.g. 50 Mbps">
+      </label>
+      <label>Price (₹ / month)
+        <input type="number" id="pkgPrice" min="0" placeholder="e.g. 599">
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="addPackageBtn">+ Add package</button>
+      <button type="button" class="btn btn-ghost" id="closePackagesBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub settings modal -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal">
+    <h2>GitHub sync</h2>
+    <p class="hint">Connect this page to a GitHub repo to load and save the customer register as a JSON file. Use a fine-grained personal access token scoped only to this repo, with "Contents: Read and write" permission.</p>
+    <div class="form-grid">
+      <label>Repo owner
+        <input type="text" id="ghOwner" placeholder="yourusername">
+      </label>
+      <label>Repository
+        <input type="text" id="ghRepo" placeholder="my-customers">
+      </label>
+      <label>File path
+        <input type="text" id="ghPath" value="customers.json">
+      </label>
+      <label>Branch
+        <input type="text" id="ghBranch" value="main">
+      </label>
+      <label class="full">Personal access token
+        <input type="password" id="ghToken" placeholder="ghp_…">
+      </label>
+    </div>
+    <p class="hint">The token stays in this browser tab's memory only — it is never saved into this file or committed anywhere.</p>
+    <div class="gh-log" id="ghLog">Ready.</div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="ghLoadBtn">Load from GitHub</button>
+      <button type="button" class="btn btn-primary" id="ghSaveBtn">Save to GitHub</button>
+      <button type="button" class="btn btn-ghost" id="closeSettingsBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Copied!</div>
+
+<script>
+/* ---------------------------------------------------------------
+   No data is stored in this file. Everything you see is loaded
+   live from customers.json (next to this HTML file) — add, edit,
+   or remove customers there and this page will pick it up.
+--------------------------------------------------------------- */
+const DEFAULT_DATA = {"packages":[],"customers":[]};
+let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+let ghConfig = { owner:'', repo:'', path:'customers.json', branch:'main', token:'' };
+let currentSha = null;
+let dirty = false;
+let editingCustomerId = null;
+let editingPackageId = null;
+
+/* ---------------------------------------------------------------
+   customers.json file sync
+   - On load, tries to fetch customers.json sitting next to this
+     HTML file (works when both files are served over http/https,
+     e.g. via a local server or a web host).
+   - Polls every few seconds and silently re-renders if the file
+     on disk changed (skipped while you have unsaved edits open).
+   - If fetch can't reach the file (most browsers block fetch()
+     for local file:// pages), falls back to the "Load JSON file"
+     picker below, which reads any customers.json you choose with
+     no server needed.
+--------------------------------------------------------------- */
+const JSON_FILE_NAME = 'customers.json';
+let lastLoadedJsonText = JSON.stringify(DEFAULT_DATA);
+let fileSyncMode = 'pending'; // 'fetch' | 'manual' | 'pending'
+let filePollTimer = null;
+
+function isValidRegister(parsed){
+  return parsed && Array.isArray(parsed.customers) && Array.isArray(parsed.packages);
+}
+
+function setFileSyncStatus(text, kind){
+  const pill = document.getElementById('fileSyncStatus');
+  if (!pill) return;
+  pill.textContent = text;
+  pill.classList.remove('connected','dirty');
+  if (kind === 'ok') pill.classList.add('connected');
+  if (kind === 'warn') pill.classList.add('dirty');
+}
+
+async function fetchCustomersJson(silent){
+  try {
+    const res = await fetch(JSON_FILE_NAME + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const parsed = JSON.parse(text);
+    if (!isValidRegister(parsed)) throw new Error('customers.json is missing "customers"/"packages" arrays');
+
+    if (text === lastLoadedJsonText){
+      if (!silent) setFileSyncStatus(`Synced with ${JSON_FILE_NAME}`, 'ok');
+      return true; // nothing changed
+    }
+    if (dirty){
+      // Don't clobber unsaved edits — just let the user know.
+      setFileSyncStatus(`${JSON_FILE_NAME} changed on disk — click ↻ Reload to refresh (you have unsaved edits)`, 'warn');
+      return true;
+    }
+    lastLoadedJsonText = text;
+    appData = parsed;
+    fileSyncMode = 'fetch';
+    render();
+    setFileSyncStatus(`Synced with ${JSON_FILE_NAME} · ${new Date().toLocaleTimeString()}`, 'ok');
+    return true;
+  } catch(err){
+    if (!silent){
+      setFileSyncStatus(`Couldn't auto-load ${JSON_FILE_NAME} (${err.message}). Use "📂 Load JSON file" instead.`, 'warn');
+    }
+    return false;
+  }
+}
+
+function startFilePolling(){
+  if (filePollTimer) clearInterval(filePollTimer);
+  filePollTimer = setInterval(() => fetchCustomersJson(true), 4000);
+}
+
+async function initJsonFileSync(){
+  const ok = await fetchCustomersJson(false);
+  if (ok){
+    startFilePolling();
+  } else {
+    fileSyncMode = 'manual';
+    setFileSyncStatus(`Using built-in data — pick your ${JSON_FILE_NAME} to load it`, 'warn');
+  }
+}
+
+function loadJsonFromFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const text = String(reader.result);
+      const parsed = JSON.parse(text);
+      if (!isValidRegister(parsed)) throw new Error('Missing "customers"/"packages" arrays');
+      lastLoadedJsonText = text;
+      appData = parsed;
+      dirty = false;
+      fileSyncMode = 'manual';
+      if (filePollTimer) clearInterval(filePollTimer);
+      render();
+      updateSyncPill();
+      setFileSyncStatus(`Loaded ${file.name} · ${new Date().toLocaleTimeString()}`, 'ok');
+    } catch(err){
+      setFileSyncStatus(`Couldn't read that file: ${err.message}`, 'warn');
+    }
+  };
+  reader.onerror = () => setFileSyncStatus('Could not read the selected file.', 'warn');
+  reader.readAsText(file, 'utf-8');
+}
+
+const VILLAGE_PALETTE = [
+  {bg:'#DCEDE9', fg:'#1E4A45'},
+  {bg:'#FBEBD4', fg:'#9A5B14'},
+  {bg:'#F6E1DA', fg:'#9C4A33'},
+  {bg:'#E3EFE2', fg:'#3F6B4C'},
+  {bg:'#E3E8EC', fg:'#45565E'},
+];
+let villageColorMap = {};
+
+/* ---------------------------------------------------------------
+   Helpers
+--------------------------------------------------------------- */
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function formatINR(n){
+  return '₹' + Number(n || 0).toLocaleString('en-IN');
+}
+function getUniqueVillages(){
+  return [...new Set(appData.customers.map(c=>c.village))].sort();
+}
+function getPackage(id){
+  return appData.packages.find(p=>p.id===id);
+}
+function buildVillageColors(){
+  villageColorMap = {};
+  getUniqueVillages().forEach((v,i)=>{ villageColorMap[v] = VILLAGE_PALETTE[i % VILLAGE_PALETTE.length]; });
+}
+function utf8ToB64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64ToUtf8(str){ return decodeURIComponent(escape(atob(str))); }
+
+/* ---------------------------------------------------------------
+   Rendering
+--------------------------------------------------------------- */
+function render(){
+  buildVillageColors();
+  populateFilterOptions();
+  renderCards();
+  updateStats();
+}
+
+function populateFilterOptions(){
+  const villageFilter = document.getElementById('villageFilter');
+  const packageFilter = document.getElementById('packageFilter');
+  const keepVillage = villageFilter.value;
+  const keepPackage = packageFilter.value;
+
+  villageFilter.innerHTML = '<option value="">All villages</option>' +
+    getUniqueVillages().map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  packageFilter.innerHTML = '<option value="">All packages</option>' +
+    appData.packages.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+
+  villageFilter.value = keepVillage;
+  packageFilter.value = keepPackage;
+
+  document.getElementById('villageList').innerHTML =
+    getUniqueVillages().map(v=>`<option value="${escapeHtml(v)}">`).join('');
+}
+
+function getFilteredCustomers(){
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const village = document.getElementById('villageFilter').value;
+  const pkg = document.getElementById('packageFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  return appData.customers.filter(c=>{
+    if (search && !(
+      c.name.toLowerCase().includes(search) ||
+      c.phone.includes(search) ||
+      c.id.toLowerCase().includes(search)
+    )) return false;
+    if (village && c.village !== village) return false;
+    if (pkg && c.packageId !== pkg) return false;
+    if (status && c.status !== status) return false;
+    return true;
+  });
+}
+
+function renderCards(){
+  const grid = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyState');
+  const list = getFilteredCustomers();
+
+  if (list.length === 0){
+    grid.innerHTML = '';
+    empty.textContent = appData.customers.length === 0
+      ? `No customers loaded yet — put customers.json next to this HTML file and click "↻ Reload", or use "📂 Load JSON file" to pick it manually.`
+      : 'No connections match your filters.';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  grid.innerHTML = list.map(c=>{
+    const pkg = getPackage(c.packageId);
+    const vc = villageColorMap[c.village] || VILLAGE_PALETTE[0];
+    const isActive = c.status === 'active';
+    const initials = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const price = pkg ? formatINR(pkg.price) : '—';
+    const pkgLabel = pkg ? `${escapeHtml(pkg.name)}${pkg.speed ? ' · ' + escapeHtml(pkg.speed) : ''}` : '—';
+
+    return `<div class="customer-card" id="card-${c.id}">
+      <div class="card-face" onclick="toggleCard('${c.id}')">
+        <div class="card-avatar-wrap ${isActive ? 'active' : 'inactive'}">
+          <div class="card-avatar" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(initials)}</div>
+        </div>
+        <div class="card-main">
+          <div class="card-name">${escapeHtml(getDisplayName(c))}</div>
+          <div class="card-id">${price}</div>
+        </div>
+        <div class="card-price">
+          <span class="phone-copy" onclick="event.stopPropagation();copyPhone('${escapeHtml(c.id)}')" title="Copy ID">
+            ${escapeHtml(c.id)}
+            <span class="copy-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4.5" y="4.5" width="7" height="7" rx="1.2" stroke="#8C8579" stroke-width="1.3"/><path d="M3 8.5H2A1.5 1.5 0 0 1 .5 7V2A1.5 1.5 0 0 1 2 .5h5A1.5 1.5 0 0 1 8.5 2v1" stroke="#8C8579" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          </span>
+        </div>
+        <span class="card-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4L6 8L10 4" stroke="#8C8579" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="card-drawer">
+        <div class="drawer-inner">
+          <div class="drawer-body">
+            <div class="drawer-rows">
+              <div class="drawer-row">
+                <span class="drawer-row-label">Package</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value">${pkg ? escapeHtml(pkg.name) : '—'}</span>
+              </div>
+              <div class="drawer-row">
+                <span class="drawer-row-label">Price</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value">${pkg ? formatINR(pkg.price) : '—'}</span>
+              </div>
+              <div class="drawer-row">
+                <span class="drawer-row-label">Phone</span>
+                <span class="drawer-row-colon">:</span>
+                <span class="drawer-row-value mono"><a href="tel:${escapeHtml(c.phone)}" class="phone-link" title="Call ${escapeHtml(c.phone)}" onclick="event.stopPropagation()">📞 ${escapeHtml(c.phone)}</a></span>
+              </div>
+            </div>
+            <div class="drawer-village">
+              <span class="tag" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(getDisplayVillage(c))}</span>
+            </div>
+          </div>
+          <div class="drawer-actions">
+            <button class="drawer-btn" onclick="openCustomerModal('${c.id}')">✎ Edit</button>
+            <button class="drawer-btn danger" onclick="deleteCustomer('${c.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="3.5" x2="11" y2="3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/><line x1="3" y1="10.5" x2="11" y2="10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/></svg> Strike out</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(id){
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  const drawer = card.querySelector('.card-drawer');
+  const isOpen = card.classList.contains('open');
+
+  if (isOpen){
+    // closing: animate from scrollHeight down to 0
+    drawer.style.height = drawer.scrollHeight + 'px';
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{ drawer.style.height = '0'; });
+    });
+    card.classList.remove('open');
+  } else {
+    // opening: animate from 0 up to scrollHeight
+    card.classList.add('open');
+    drawer.style.height = drawer.scrollHeight + 'px';
+    drawer.addEventListener('transitionend', function onEnd(){
+      drawer.style.height = 'auto';
+      drawer.removeEventListener('transitionend', onEnd);
+    }, { once: true });
+  }
+}
+
+function updateStats(){
+  const total = appData.customers.length;
+  const active = appData.customers.filter(c=>c.status==='active').length;
+  const inactive = total - active;
+  const villages = getUniqueVillages().length;
+  const revenue = appData.customers
+    .filter(c=>c.status==='active')
+    .reduce((sum,c)=>{
+      const pkg = getPackage(c.packageId);
+      return sum + (pkg ? pkg.price : 0);
+    }, 0);
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statInactive').textContent = inactive;
+  document.getElementById('statVillages').textContent = villages;
+  document.getElementById('statRevenue').textContent = formatINR(revenue);
+}
+
+/* ---------------------------------------------------------------
+   Telugu toggle
+--------------------------------------------------------------- */
+let teluguMode = true; // default: Telugu active
+
+function setLang(lang){
+  const enBtn = document.getElementById('langEnBtn');
+  const teBtn = document.getElementById('langTeBtn');
+  const wasTelugu = teluguMode;
+  teluguMode = (lang === 'te');
+
+  enBtn.classList.toggle('lang-active', !teluguMode);
+  teBtn.classList.toggle('lang-active',  teluguMode);
+
+  if (teluguMode && !wasTelugu){
+    // Entering Telugu mode — ensure every customer has a telugu_name
+    let added = false;
+    appData.customers.forEach(c=>{
+      if (!c.telugu_name){ c.telugu_name = 'అ'; added = true; }
+    });
+    if (added) markDirty();
+  }
+  render();
+}
+
+function getDisplayName(c){
+  return teluguMode && c.telugu_name ? c.telugu_name : c.name;
+}
+
+function getDisplayVillage(c){
+  return teluguMode && c['Village name'] ? c['Village name'] : c.village;
+}
+
+/* ---------------------------------------------------------------
+   Dirty / sync indicator
+--------------------------------------------------------------- */
+function markDirty(){
+  dirty = true;
+  updateSyncPill();
+}
+function updateSyncPill(){
+  const pill = document.getElementById('syncStatus');
+  pill.classList.remove('connected','dirty');
+  if (ghConfig.owner && ghConfig.repo){
+    if (dirty){
+      pill.textContent = `${ghConfig.owner}/${ghConfig.repo} — unsaved changes`;
+      pill.classList.add('dirty');
+    } else {
+      pill.textContent = `${ghConfig.owner}/${ghConfig.repo} — synced`;
+      pill.classList.add('connected');
+    }
+  } else {
+    pill.textContent = 'Not connected to GitHub';
+  }
+}
+
+/* ---------------------------------------------------------------
+   Customer CRUD
+--------------------------------------------------------------- */
+function toggleStatus(id){
+  const c = appData.customers.find(c=>c.id===id);
+  if (!c) return;
+  c.status = c.status === 'active' ? 'inactive' : 'active';
+  render();
+  markDirty();
+}
+
+function generateCustomerId(){
+  const nums = appData.customers
+    .map(c => parseInt(String(c.id).replace(/\D/g,''), 10))
+    .filter(n => !isNaN(n));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return 'C' + String(next).padStart(4,'0');
+}
+
+function openCustomerModal(id=null){
+  editingCustomerId = id;
+  const title = document.getElementById('customerModalTitle');
+  const pkgSelect = document.getElementById('custPackage');
+
+  pkgSelect.innerHTML = appData.packages
+    .map(p=>`<option value="${p.id}">${escapeHtml(p.name)}${p.speed ? ' — ' + escapeHtml(p.speed) : ''} (${formatINR(p.price)})</option>`)
+    .join('');
+
+  if (id){
+    const c = appData.customers.find(c=>c.id===id);
+    title.textContent = `Edit customer — ${c.id}`;
+    document.getElementById('custName').value = c.name;
+    document.getElementById('custPhone').value = c.phone;
+    document.getElementById('custVillage').value = c.village;
+    document.getElementById('custPackage').value = c.packageId;
+    document.getElementById('custStatus').value = c.status;
+    document.getElementById('custJoin').value = c.joinDate || '';
+    document.getElementById('custExpiry').value = c.expiryDate || '';
+    document.getElementById('custAddress').value = c.address || '';
+  } else {
+    title.textContent = 'Add customer';
+    document.getElementById('customerForm').reset();
+    const today = new Date();
+    const nextYear = new Date(today);
+    nextYear.setFullYear(today.getFullYear() + 1);
+    document.getElementById('custJoin').value = today.toISOString().slice(0,10);
+    document.getElementById('custExpiry').value = nextYear.toISOString().slice(0,10);
+    document.getElementById('custStatus').value = 'active';
+    if (appData.packages.length) document.getElementById('custPackage').value = appData.packages[0].id;
+  }
+  document.getElementById('customerModal').classList.remove('hidden');
+}
+
+function closeCustomerModal(){
+  document.getElementById('customerModal').classList.add('hidden');
+  editingCustomerId = null;
+}
+
+function handleCustomerSubmit(e){
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('custName').value.trim(),
+    phone: document.getElementById('custPhone').value.trim(),
+    village: document.getElementById('custVillage').value.trim(),
+    packageId: document.getElementById('custPackage').value,
+    status: document.getElementById('custStatus').value,
+    joinDate: document.getElementById('custJoin').value,
+    expiryDate: document.getElementById('custExpiry').value,
+    address: document.getElementById('custAddress').value.trim(),
+  };
+
+  if (editingCustomerId){
+    const c = appData.customers.find(c=>c.id===editingCustomerId);
+    Object.assign(c, data);
+  } else {
+    data.id = generateCustomerId();
+    appData.customers.push(data);
+  }
+
+  closeCustomerModal();
+  render();
+  markDirty();
+}
+
+function deleteCustomer(id){
+  const c = appData.customers.find(c=>c.id===id);
+  if (!c) return;
+  if (!confirm(`Remove ${c.name} (${c.id}) from the register? This cannot be undone here.`)) return;
+  appData.customers = appData.customers.filter(c=>c.id!==id);
+  render();
+  markDirty();
+}
+
+/* ---------------------------------------------------------------
+   Package CRUD
+--------------------------------------------------------------- */
+function openPackagesModal(){
+  editingPackageId = null;
+  document.getElementById('pkgName').value = '';
+  document.getElementById('pkgSpeed').value = '';
+  document.getElementById('pkgPrice').value = '';
+  document.getElementById('addPackageBtn').textContent = '+ Add package';
+  renderPackagesList();
+  document.getElementById('packagesModal').classList.remove('hidden');
+}
+
+function closePackagesModal(){
+  document.getElementById('packagesModal').classList.add('hidden');
+  render();
+}
+
+function renderPackagesList(){
+  const list = document.getElementById('packagesList');
+  if (appData.packages.length === 0){
+    list.innerHTML = '<p class="hint">No packages yet — add one below.</p>';
+    return;
+  }
+  list.innerHTML = appData.packages.map(p=>{
+    const inUse = appData.customers.filter(c=>c.packageId===p.id).length;
+    return `<div class="pkg-row">
+      <div>
+        <strong>${escapeHtml(p.name)}</strong>
+        <span class="hint" style="margin:0"> — ${escapeHtml(p.speed)} • ${formatINR(p.price)}/mo • ${inUse} customer${inUse===1?'':'s'}</span>
+      </div>
+      <div>
+        <button class="icon-btn" onclick="editPackage('${p.id}')" title="Edit">✎</button>
+        <button class="icon-btn" onclick="deletePackage('${p.id}')" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editPackage(id){
+  const p = appData.packages.find(p=>p.id===id);
+  if (!p) return;
+  editingPackageId = id;
+  document.getElementById('pkgName').value = p.name;
+  document.getElementById('pkgSpeed').value = p.speed;
+  document.getElementById('pkgPrice').value = p.price;
+  document.getElementById('addPackageBtn').textContent = 'Save package';
+}
+
+function deletePackage(id){
+  const inUse = appData.customers.some(c=>c.packageId===id);
+  if (inUse && !confirm('Some customers are on this package. Delete it anyway? Their row will show "—" for package until reassigned.')) return;
+  appData.packages = appData.packages.filter(p=>p.id!==id);
+  renderPackagesList();
+  markDirty();
+}
+
+function handleAddPackage(){
+  const name = document.getElementById('pkgName').value.trim();
+  const speed = document.getElementById('pkgSpeed').value.trim();
+  const price = parseFloat(document.getElementById('pkgPrice').value);
+
+  if (!name || !speed || isNaN(price)){
+    alert('Please fill in name, speed and price.');
+    return;
+  }
+
+  if (editingPackageId){
+    const p = appData.packages.find(p=>p.id===editingPackageId);
+    Object.assign(p, { name, speed, price });
+    editingPackageId = null;
+    document.getElementById('addPackageBtn').textContent = '+ Add package';
+  } else {
+    appData.packages.push({ id: 'pkg' + Date.now(), name, speed, price });
+  }
+
+  document.getElementById('pkgName').value = '';
+  document.getElementById('pkgSpeed').value = '';
+  document.getElementById('pkgPrice').value = '';
+  renderPackagesList();
+  markDirty();
+}
+
+/* ---------------------------------------------------------------
+   GitHub sync
+--------------------------------------------------------------- */
+function restoreGhConfig(){
+  try {
+    const saved = sessionStorage.getItem('skjcn_gh_config');
+    if (saved){
+      const cfg = JSON.parse(saved);
+      Object.assign(ghConfig, cfg);
+    }
+  } catch(e){ /* storage unavailable — ignore */ }
+}
+
+function persistGhConfig(){
+  try {
+    const { token, ...rest } = ghConfig;
+    sessionStorage.setItem('skjcn_gh_config', JSON.stringify(rest));
+  } catch(e){ /* storage unavailable — ignore */ }
+}
+
+function openSettingsModal(){
+  document.getElementById('ghOwner').value = ghConfig.owner;
+  document.getElementById('ghRepo').value = ghConfig.repo;
+  document.getElementById('ghPath').value = ghConfig.path;
+  document.getElementById('ghBranch').value = ghConfig.branch;
+  document.getElementById('ghToken').value = ghConfig.token;
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+function closeSettingsModal(){
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
+function readGhFormToConfig(){
+  ghConfig.owner = document.getElementById('ghOwner').value.trim();
+  ghConfig.repo = document.getElementById('ghRepo').value.trim();
+  ghConfig.path = document.getElementById('ghPath').value.trim() || 'customers.json';
+  ghConfig.branch = document.getElementById('ghBranch').value.trim() || 'main';
+  ghConfig.token = document.getElementById('ghToken').value.trim();
+}
+
+function ghLog(msg, isError=false){
+  const log = document.getElementById('ghLog');
+  const time = new Date().toLocaleTimeString();
+  log.textContent += `\n[${time}] ${msg}`;
+  log.scrollTop = log.scrollHeight;
+  log.classList.toggle('error', isError);
+}
+
+async function loadFromGitHub(){
+  readGhFormToConfig();
+  if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token){
+    ghLog('Please fill in owner, repo and token first.', true);
+    return;
+  }
+  persistGhConfig();
+  ghLog(`Loading ${ghConfig.path} from ${ghConfig.owner}/${ghConfig.repo}@${ghConfig.branch}…`);
+  try {
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(ghConfig.path)}?ref=${encodeURIComponent(ghConfig.branch)}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `token ${ghConfig.token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (res.status === 404){
+      currentSha = null;
+      ghLog('File not found in repo yet — it will be created the first time you save.');
+      updateSyncPill();
+      return;
+    }
+    if (!res.ok){
+      const errJson = await res.json().catch(()=>({}));
+      throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
+    }
+    const json = await res.json();
+    currentSha = json.sha;
+    const content = b64ToUtf8(json.content.replace(/\n/g,''));
+    const parsed = JSON.parse(content);
+    if (!Array.isArray(parsed.customers) || !Array.isArray(parsed.packages)){
+      throw new Error('That file does not look like a SKJCN register (expected "customers" and "packages" arrays).');
+    }
+    appData = parsed;
+    dirty = false;
+    render();
+    updateSyncPill();
+    ghLog(`Loaded ${parsed.customers.length} customers and ${parsed.packages.length} packages.`);
+  } catch(err){
+    ghLog('Load failed: ' + err.message, true);
+  }
+}
+
+async function saveToGitHub(){
+  readGhFormToConfig();
+  if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token){
+    ghLog('Please fill in owner, repo and token first.', true);
+    return;
+  }
+  persistGhConfig();
+  ghLog(`Saving to ${ghConfig.owner}/${ghConfig.repo}/${ghConfig.path}…`);
+  try {
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(ghConfig.path)}`;
+    const body = {
+      message: `Update customer register — ${new Date().toISOString()}`,
+      content: utf8ToB64(JSON.stringify(appData, null, 2)),
+      branch: ghConfig.branch,
+    };
+    if (currentSha) body.sha = currentSha;
+
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `token ${ghConfig.token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok){
+      const errJson = await res.json().catch(()=>({}));
+      throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
+    }
+    const json = await res.json();
+    currentSha = json.content.sha;
+    dirty = false;
+    updateSyncPill();
+    ghLog('Saved successfully.');
+  } catch(err){
+    ghLog('Save failed: ' + err.message, true);
+  }
+}
+
+function exportJson(){
+  const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'customers.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function copyPhone(phone){
+  navigator.clipboard.writeText(phone).then(()=>{
+    const toast = document.getElementById('copyToast');
+    toast.textContent = phone + ' copied!';
+    toast.classList.add('show');
+    clearTimeout(copyPhone._t);
+    copyPhone._t = setTimeout(()=>toast.classList.remove('show'), 2000);
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = phone;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const toast = document.getElementById('copyToast');
+    toast.textContent = phone + ' copied!';
+    toast.classList.add('show');
+    clearTimeout(copyPhone._t);
+    copyPhone._t = setTimeout(()=>toast.classList.remove('show'), 2000);
+  });
+}
+
+/* ---------------------------------------------------------------
+   Wiring
+--------------------------------------------------------------- */
+function bindEvents(){
+  document.getElementById('searchInput').addEventListener('input', renderCards);
+  document.getElementById('villageFilter').addEventListener('change', renderCards);
+  document.getElementById('packageFilter').addEventListener('change', renderCards);
+  document.getElementById('statusFilter').addEventListener('change', renderCards);
+
+  document.getElementById('addCustomerBtn').addEventListener('click', ()=>openCustomerModal());
+  document.getElementById('cancelCustomerBtn').addEventListener('click', closeCustomerModal);
+  document.getElementById('customerForm').addEventListener('submit', handleCustomerSubmit);
+
+  document.getElementById('managePackagesBtn').addEventListener('click', openPackagesModal);
+  document.getElementById('closePackagesBtn').addEventListener('click', closePackagesModal);
+  document.getElementById('addPackageBtn').addEventListener('click', handleAddPackage);
+
+  document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+  document.getElementById('closeSettingsBtn').addEventListener('click', closeSettingsModal);
+  document.getElementById('ghLoadBtn').addEventListener('click', loadFromGitHub);
+  document.getElementById('ghSaveBtn').addEventListener('click', saveToGitHub);
+
+  document.getElementById('exportBtn').addEventListener('click', exportJson);
+
+  document.getElementById('reloadJsonBtn').addEventListener('click', ()=>fetchCustomersJson(false));
+  document.getElementById('loadJsonBtn').addEventListener('click', ()=>document.getElementById('jsonFileInput').click());
+  document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (file) loadJsonFromFile(file);
+    e.target.value = '';
+  });
+
+  document.querySelectorAll('.modal-overlay').forEach(ov=>{
+    ov.addEventListener('click', (e)=>{ if (e.target === ov) ov.classList.add('hidden'); });
+  });
+}
+
+restoreGhConfig();
+updateSyncPill();
+render();
+bindEvents();
+initJsonFileSync();
+</script>
+</body>
+</html>    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+
+  /* Topbar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand h1{font-family:var(--font-display);font-size:28px;font-weight:600;margin:0;color:var(--primary);letter-spacing:-0.5px;}
+  .brand p{margin:2px 0 0;font-size:13px;color:var(--muted);}
+  .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .sync-pill{font-size:12px;padding:6px 12px;border-radius:99px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);}
+  .sync-pill.connected{color:var(--success);border-color:var(--success);background:var(--success-soft);}
+  .sync-pill.dirty{color:var(--accent-ink);border-color:var(--accent);background:var(--accent-soft);}
+
+  /* Stats */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;}
+  .stat-value{display:block;font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--primary);line-height:1.1;}
+  .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px;display:block;}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);padding:12px;border-radius:var(--radius);border:1px solid var(--border);}
   .lang-btn{
     font-family:var(--font-body);font-size:14px;padding:9px 18px;
     border-radius:7px;border:1px solid var(--border);
