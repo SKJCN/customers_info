@@ -21,66 +21,73 @@
       "price": 1299
     }
   ],
+  "villages": [
+    {
+      "village_en": "Singamaala",
+      "village_te": "సింగమాల",
+      "villageId": "sing"
+    },
+    {
+      "village_en": "Jagananna Colony",
+      "village_te": "జగనన్న కాలనీ",
+      "villageId": "jag"
+    }
+    
+  ],
   "customers": [
     {
       "id": "70532498915",
       "name": "Dhoraswamy",
-      "phone": "00000 00000",
-      "village": "Singamaala",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "ధోరస్వామి",
-      "Village name": "సింగమాల"
+      "phone": "00000 00000",
+      "villageId": "sing",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "AC2008322369",
       "name": "Sasikala",
-      "phone": "00000 00000",
-      "village": "Singamaala",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "శశికల",
-      "Village name": "సింగమాల"
+      "phone": "00000 00000",
+      "villageId": "sing",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "70594282132",
       "name": "G Lakshmi",
-      "phone": "00000 00000",
-      "village": "Jagananna Colony",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "G లక్ష్మి",
-      "Village name": "జగనన్న కాలనీ"
+      "phone": "00000 00000",
+      "villageId": "jag",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "833300402993",
       "name": "C Sankaramma",
-      "phone": "00000 00000",
-      "village": "Jagananna Colony",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "C శంకరమ్మ",
-      "Village name": "జగనన్న కాలనీ"
+      "phone": "00000 00000",
+      "villageId": "jag",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "70532410043",
       "name": "Sugunamma",
-      "phone": "00000 00000",
-      "village": "Jagananna Colony",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "సుగుణమ్మ",
-      "Village name": "జగనన్న కాలనీ"
+      "phone": "00000 00000",
+      "villageId": "jag",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "111409044929",
       "name": "Ramulamma",
-      "phone": "00000 00000",
-      "village": "Jagananna Colony",
-      "packageId": "pkg1",
-      "status": "active",
       "telugu_name": "రాములమ్మ",
-      "Village name": "జగనన్న కాలనీ"
+      "phone": "00000 00000",
+      "villageId": "jag",
+      "packageId": "pkg1",
+      "status": "active"
     },
     {
       "id": "C0002",
