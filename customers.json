@@ -43,6 +43,46 @@
       "Village name": "సింగమాల"
     },
     {
+      "id": "70594282132",
+      "name": "G Lakshmi",
+      "phone": "00000 00000",
+      "village": "Jagananna Colony",
+      "packageId": "pkg1",
+      "status": "active",
+      "telugu_name": "G లక్ష్మి",
+      "Village name": "జగనన్న కాలనీ"
+    },
+    {
+      "id": "833300402993",
+      "name": "C Sankaramma",
+      "phone": "00000 00000",
+      "village": "Jagananna Colony",
+      "packageId": "pkg1",
+      "status": "active",
+      "telugu_name": "C శంకరమ్మ",
+      "Village name": "జగనన్న కాలనీ"
+    },
+    {
+      "id": "70532410043",
+      "name": "Sugunamma",
+      "phone": "00000 00000",
+      "village": "Jagananna Colony",
+      "packageId": "pkg1",
+      "status": "active",
+      "telugu_name": "సుగుణమ్మ",
+      "Village name": "జగనన్న కాలనీ"
+    },
+    {
+      "id": "111409044929",
+      "name": "Ramulamma",
+      "phone": "00000 00000",
+      "village": "Jagananna Colony",
+      "packageId": "pkg1",
+      "status": "active",
+      "telugu_name": "రాములమ్మ",
+      "Village name": "జగనన్న కాలనీ"
+    },
+    {
       "id": "C0002",
       "name": "Mohan Prasad",
       "phone": "9134126396",
