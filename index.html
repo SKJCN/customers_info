@@ -49,8 +49,27 @@
   .sync-pill.connected{color:var(--success);border-color:var(--success);background:var(--success-soft);}
   .sync-pill.dirty{color:var(--accent-ink);border-color:var(--accent);background:var(--accent-soft);}
 
-  /* Stats */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+  /* Dashboard section collapse */
+  .stats-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+    overflow:hidden;
+    max-height:500px;
+    opacity:1;
+    transform:translateY(0);
+    margin-top:0;
+    transition:max-height .35s cubic-bezier(.4,0,.2,1),
+               opacity .3s ease,
+               transform .35s cubic-bezier(.4,0,.2,1),
+               margin-top .35s cubic-bezier(.4,0,.2,1);
+  }
+  .stats-grid.hidden{
+    max-height:0;
+    opacity:0;
+    transform:translateY(-8px);
+    margin-top:-20px;
+    gap:0;
+    pointer-events:none;
+  }
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;}
   .stat-value{display:block;font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--primary);line-height:1.1;}
   .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px;display:block;}
@@ -369,6 +388,19 @@
       </div>
     </div>
     <div class="topbar-actions">
+      <div class="lang-toggle" id="langToggle">
+        <button class="lang-option" id="langEnBtn" onclick="setLang('en')" title="Show in English">in English</button>
+        <button class="lang-option lang-active" id="langTeBtn" onclick="setLang('te')" title="తెలుగులో చూపించు">తెలుగు లో</button>
+      </div>
+      <button class="filter-btn" id="dashboardBtn" title="Toggle dashboard">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="9" y="1" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="1" y="9" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="9" y="9" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        Dashboard
+      </button>
       <span class="sync-pill" id="fileSyncStatus">Loading customers.json…</span>
       <span class="sync-pill" id="syncStatus">Not connected to GitHub</span>
       <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none;">
@@ -379,7 +411,7 @@
     </div>
   </header>
 
-  <section class="stats-grid">
+  <section class="stats-grid hidden" id="dashboardSection">
     <div class="stat-card"><span class="stat-value" id="statTotal">0</span><span class="stat-label">Total connections</span></div>
     <div class="stat-card"><span class="stat-value" id="statActive">0</span><span class="stat-label">Active</span></div>
     <div class="stat-card"><span class="stat-value" id="statInactive">0</span><span class="stat-label">Inactive</span></div>
@@ -388,6 +420,24 @@
   </section>
 
   <section class="toolbar">
+    <button class="filter-btn" id="addCustomerBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="6.5" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M1 13c0-2.5 2.5-4 5.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M12 10v4M10 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Add customer
+    </button>
+    <button class="filter-btn" id="managePackagesBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+        <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+        <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+        <rect x="9" y="9" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      Packages
+    </button>
+    <span class="spacer"></span>
     <button class="filter-btn" id="filterBtn" title="Search &amp; filter">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
@@ -395,13 +445,6 @@
       Filter
       <span class="filter-btn-badge" id="filterBtnBadge"></span>
     </button>
-    <span class="spacer"></span>
-    <div class="lang-toggle" id="langToggle">
-      <button class="lang-option" id="langEnBtn" onclick="setLang('en')" title="Show in English">in English</button>
-      <button class="lang-option lang-active" id="langTeBtn" onclick="setLang('te')" title="తెలుగులో చూపించు">తెలుగు లో</button>
-    </div>
-    <button class="btn btn-secondary" id="managePackagesBtn">Packages</button>
-    <button class="btn btn-primary" id="addCustomerBtn">+ Add customer</button>
   </section>
 
   <section class="cards-wrap">
@@ -446,71 +489,84 @@
   </div>
 </aside>
 
-<!-- Add / Edit customer modal -->
-<div class="modal-overlay hidden" id="customerModal">
-  <div class="modal">
-    <h2 id="customerModalTitle">Add customer</h2>
-    <form id="customerForm">
-      <div class="form-grid">
-        <label>Name
-          <input type="text" id="custName" required>
-        </label>
-        <label>Phone
-          <input type="tel" id="custPhone" required pattern="[0-9]{10}" title="10 digit mobile number">
-        </label>
-        <label>Village
-          <select id="custVillage" required></select>
-        </label>
-        <label>Package
-          <select id="custPackage"></select>
-        </label>
-        <label>Status
-          <select id="custStatus">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </label>
-        <label>Joined
-          <input type="date" id="custJoin">
-        </label>
-        <label>Expires
-          <input type="date" id="custExpiry">
-        </label>
-        <label class="full">Address / notes
-          <textarea id="custAddress"></textarea>
-        </label>
+<!-- Add / Edit customer drawer -->
+<aside class="drawer" id="customerDrawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title" id="customerModalTitle">Add customer</h2>
+    <button class="drawer-close" id="cancelCustomerBtn" title="Close">&#x2715;</button>
+  </div>
+  <div class="drawer-body">
+    <form id="customerForm" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="drawer-group">
+        <label class="drawer-label" for="custName">Name</label>
+        <input class="drawer-input" type="text" id="custName" required>
       </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="cancelCustomerBtn">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save customer</button>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custPhone">Phone</label>
+        <input class="drawer-input" type="tel" id="custPhone" required pattern="[0-9]{10}" title="10 digit mobile number">
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custVillage">Village</label>
+        <select class="drawer-input" id="custVillage" required></select>
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custPackage">Package</label>
+        <select class="drawer-input" id="custPackage"></select>
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custStatus">Status</label>
+        <select class="drawer-input" id="custStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custJoin">Joined</label>
+        <input class="drawer-input" type="date" id="custJoin">
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custExpiry">Expires</label>
+        <input class="drawer-input" type="date" id="custExpiry">
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="custAddress">Address / notes</label>
+        <textarea class="drawer-input" id="custAddress" style="resize:vertical;min-height:70px;"></textarea>
+      </div>
+      <div class="drawer-footer" style="padding:0;border:none;margin-top:4px;">
+        <button type="submit" class="btn btn-primary" style="flex:1">Save customer</button>
       </div>
     </form>
   </div>
-</div>
+</aside>
 
-<!-- Packages modal -->
-<div class="modal-overlay hidden" id="packagesModal">
-  <div class="modal">
-    <h2>Manage packages</h2>
-    <p class="hint">Package changes apply to every customer assigned to that package.</p>
+<!-- Packages drawer -->
+<aside class="drawer" id="packagesDrawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">Packages</h2>
+    <button class="drawer-close" id="closePackagesBtn" title="Close">&#x2715;</button>
+  </div>
+  <div class="drawer-body">
+    <p class="hint" style="margin:0">Package changes apply to every customer assigned to that package.</p>
     <div id="packagesList"></div>
-    <div class="form-grid">
-      <label>Name
-        <input type="text" id="pkgName" placeholder="e.g. Standard">
-      </label>
-      <label>Speed
-        <input type="text" id="pkgSpeed" placeholder="e.g. 50 Mbps">
-      </label>
-      <label>Price (₹ / month)
-        <input type="number" id="pkgPrice" min="0" placeholder="e.g. 599">
-      </label>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="addPackageBtn">+ Add package</button>
-      <button type="button" class="btn btn-ghost" id="closePackagesBtn">Close</button>
+    <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:12px;">
+      <div class="drawer-group">
+        <label class="drawer-label" for="pkgName">Name</label>
+        <input class="drawer-input" type="text" id="pkgName" placeholder="e.g. Standard">
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="pkgSpeed">Speed</label>
+        <input class="drawer-input" type="text" id="pkgSpeed" placeholder="e.g. 50 Mbps">
+      </div>
+      <div class="drawer-group">
+        <label class="drawer-label" for="pkgPrice">Price (₹ / month)</label>
+        <input class="drawer-input" type="number" id="pkgPrice" min="0" placeholder="e.g. 599">
+      </div>
     </div>
   </div>
-</div>
+  <div class="drawer-footer">
+    <button type="button" class="btn btn-secondary" id="addPackageBtn" style="flex:1">+ Add package</button>
+  </div>
+</aside>
 
 <!-- GitHub settings modal -->
 <div class="modal-overlay hidden" id="settingsModal">
@@ -1005,11 +1061,11 @@ function openCustomerModal(id=null){
     document.getElementById('custStatus').value = 'active';
     if (appData.packages.length) document.getElementById('custPackage').value = appData.packages[0].id;
   }
-  document.getElementById('customerModal').classList.remove('hidden');
+  openDrawer('customerDrawer');
 }
 
 function closeCustomerModal(){
-  document.getElementById('customerModal').classList.add('hidden');
+  closeDrawer('customerDrawer');
   editingCustomerId = null;
 }
 
@@ -1058,11 +1114,11 @@ function openPackagesModal(){
   document.getElementById('pkgPrice').value = '';
   document.getElementById('addPackageBtn').textContent = '+ Add package';
   renderPackagesList();
-  document.getElementById('packagesModal').classList.remove('hidden');
+  openDrawer('packagesDrawer');
 }
 
 function closePackagesModal(){
-  document.getElementById('packagesModal').classList.add('hidden');
+  closeDrawer('packagesDrawer');
   render();
 }
 
@@ -1322,17 +1378,10 @@ function copyDetailId(id){
    Wiring
 --------------------------------------------------------------- */
 function bindEvents(){
-  document.getElementById('searchInput').addEventListener('input', renderCards);
-  document.getElementById('villageFilter').addEventListener('change', renderCards);
-  document.getElementById('packageFilter').addEventListener('change', renderCards);
-  document.getElementById('statusFilter').addEventListener('change', renderCards);
-
   document.getElementById('addCustomerBtn').addEventListener('click', ()=>openCustomerModal());
-  document.getElementById('cancelCustomerBtn').addEventListener('click', closeCustomerModal);
   document.getElementById('customerForm').addEventListener('submit', handleCustomerSubmit);
 
   document.getElementById('managePackagesBtn').addEventListener('click', openPackagesModal);
-  document.getElementById('closePackagesBtn').addEventListener('click', closePackagesModal);
   document.getElementById('addPackageBtn').addEventListener('click', handleAddPackage);
 
   document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
@@ -1363,30 +1412,41 @@ render();
 bindEvents();
 initJsonFileSync();
 
-/* ── Filter drawer ── */
-(function(){
-  const btn     = document.getElementById('filterBtn');
-  const badge   = document.getElementById('filterBtnBadge');
-  const overlay = document.getElementById('drawerOverlay');
-  const drawer  = document.getElementById('filterDrawer');
-  const closeBtn= document.getElementById('drawerClose');
-  const clearBtn= document.getElementById('drawerClearBtn');
-  const doneBtn = document.getElementById('drawerDoneBtn');
+/* ── Unified drawer system ── */
+const _overlay = document.getElementById('drawerOverlay');
+let _activeDrawer = null;
 
-  const searchEl = document.getElementById('searchInput');
+function openDrawer(id){
+  if (_activeDrawer) closeDrawer(_activeDrawer);
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  _overlay.classList.add('open');
+  _activeDrawer = id;
+}
+function closeDrawer(id){
+  const el = document.getElementById(id || _activeDrawer);
+  if (!el) return;
+  el.classList.remove('open');
+  _overlay.classList.remove('open');
+  _activeDrawer = null;
+}
+
+// Overlay click closes whatever is open
+_overlay.addEventListener('click', ()=> closeDrawer());
+// Escape closes
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+
+/* ── Filter drawer specific ── */
+(function(){
+  const filterBtn = document.getElementById('filterBtn');
+  const badge     = document.getElementById('filterBtnBadge');
+  const closeBtn  = document.getElementById('drawerClose');
+  const clearBtn  = document.getElementById('drawerClearBtn');
+  const doneBtn   = document.getElementById('drawerDoneBtn');
+  const searchEl  = document.getElementById('searchInput');
   const filterIds = ['villageFilter','packageFilter','statusFilter'];
 
-  function openDrawer(){
-    drawer.classList.add('open');
-    overlay.classList.add('open');
-    btn.classList.add('active');
-    setTimeout(()=>{ if(searchEl) searchEl.focus(); }, 50);
-  }
-  function closeDrawer(){
-    drawer.classList.remove('open');
-    overlay.classList.remove('open');
-    btn.classList.remove('active');
-  }
   function updateBadge(){
     let n = 0;
     if(searchEl && searchEl.value.trim()) n++;
@@ -1395,11 +1455,12 @@ initJsonFileSync();
     badge.classList.toggle('show', n > 0);
   }
 
-  btn.addEventListener('click', openDrawer);
-  overlay.addEventListener('click', closeDrawer);
-  closeBtn.addEventListener('click', closeDrawer);
-  doneBtn.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+  filterBtn.addEventListener('click', ()=>{
+    openDrawer('filterDrawer');
+    setTimeout(()=>{ if(searchEl) searchEl.focus(); }, 60);
+  });
+  closeBtn.addEventListener('click', ()=> closeDrawer('filterDrawer'));
+  doneBtn.addEventListener('click',  ()=> closeDrawer('filterDrawer'));
 
   if(searchEl) searchEl.addEventListener('input', ()=>{ updateBadge(); renderCards(); });
   filterIds.forEach(id=>{
@@ -1410,10 +1471,24 @@ initJsonFileSync();
   clearBtn.addEventListener('click', ()=>{
     if(searchEl) searchEl.value='';
     filterIds.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-    updateBadge();
-    renderCards();
+    updateBadge(); renderCards();
   });
 })();
+
+/* ── Dashboard toggle ── */
+(function(){
+  const btn     = document.getElementById('dashboardBtn');
+  const section = document.getElementById('dashboardSection');
+
+  btn.addEventListener('click', ()=>{
+    const isHidden = section.classList.contains('hidden');
+    section.classList.toggle('hidden', !isHidden);
+    btn.classList.toggle('active', isHidden);
+  });
+})();
+
+/* ── Customer drawer close btn ── */
+document.getElementById('cancelCustomerBtn').addEventListener('click', closeCustomerModal);
 </script>
 </body>
 </html>
