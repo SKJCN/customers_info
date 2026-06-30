@@ -30,7 +30,17 @@
     {
       "village_en": "Jagananna Colony",
       "village_te": "జగనన్న కాలనీ",
-      "villageId": "jag"
+      "villageId": "jaga"
+    },
+    {
+      "village_en": "Rama Naidu Colony",
+      "village_te": "రామానాయుడు కాలనీ",
+      "villageId": "rama"
+    },
+    {
+      "village_en":"Malligunta",
+      "village_te":"మల్లిగుంట",
+      "villageId":"malli"
     }
     
   ],
@@ -53,7 +63,7 @@
       "packageId": "pkg1",
       "status": "active"
     },
-    
+
 
 
 
@@ -68,7 +78,7 @@
       "name": "G Lakshmi",
       "telugu_name": "G లక్ష్మి",
       "phone": "00000 00000",
-      "villageId": "jag",
+      "villageId": "jaga",
       "packageId": "pkg1",
       "status": "active"
     },
@@ -77,7 +87,7 @@
       "name": "C Sankaramma",
       "telugu_name": "C శంకరమ్మ",
       "phone": "00000 00000",
-      "villageId": "jag",
+      "villageId": "jaga",
       "packageId": "pkg1",
       "status": "active"
     },
@@ -86,7 +96,7 @@
       "name": "Sugunamma",
       "telugu_name": "సుగుణమ్మ",
       "phone": "00000 00000",
-      "villageId": "jag",
+      "villageId": "jaga",
       "packageId": "pkg1",
       "status": "active"
     },
@@ -191,6 +201,15 @@
 
 
 
+    {
+      "id": "82393569106",
+      "name": "Govardhan",
+      "telugu_name": "గోవర్ధన్",
+      "phone": "00000 00000",
+      "villageId": "malli",
+      "packageId": "pkg1",
+      "status": "active"
+    },
     {
       "id": "C0002",
       "name": "Mohan Prasad",
