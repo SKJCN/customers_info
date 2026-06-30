@@ -369,6 +369,72 @@
     display:flex;gap:8px;flex-shrink:0;
   }
   .drawer-footer .btn{ flex:1;text-align:center; }
+
+  /* ── Village filter strip ── */
+  .village-filter-strip{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+  }
+  .village-filter-strip .vf-label{
+    font-size:11px;font-weight:600;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.08em;
+    margin-right:4px;flex-shrink:0;
+    align-self:center;
+  }
+  .vf-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-body);font-size:13px;font-weight:700;
+    padding:8px 18px;
+    border-radius:8px;
+    border:2px solid transparent;
+    cursor:pointer;
+    transition:transform .15s cubic-bezier(.4,0,.2,1),
+               box-shadow .15s cubic-bezier(.4,0,.2,1),
+               outline .1s,
+               opacity .15s;
+    white-space:nowrap;
+    user-select:none;
+    opacity:1;
+    outline:3px solid transparent;
+    outline-offset:2px;
+  }
+  .vf-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
+  }
+  .vf-btn:active{ transform:translateY(0); box-shadow:none; }
+
+  /* Active state — thick glowing outline ring around the button */
+  .vf-btn.vf-active{
+    transform:translateY(-2px) scale(1.04);
+    box-shadow:0 6px 20px rgba(0,0,0,.28);
+    outline:3px solid currentColor;
+    outline-offset:3px;
+    opacity:1;
+  }
+  /* Inactive — slightly faded but fully readable */
+  .vf-btn.vf-inactive{
+    opacity:.6;
+    box-shadow:none;
+    transform:none;
+  }
+  .vf-btn.vf-inactive:hover{
+    opacity:1;
+    transform:translateY(-2px);
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
+  }
+  .vf-count{
+    font-size:11px;font-weight:700;
+    padding:1px 7px;border-radius:99px;
+    background:rgba(0,0,0,.2);
+    letter-spacing:.01em;
+  }
 </style>
 </head>
 <body>
@@ -445,6 +511,11 @@
       Filter
       <span class="filter-btn-badge" id="filterBtnBadge"></span>
     </button>
+  </section>
+
+  <section class="village-filter-strip" id="villageFilterStrip">
+    <span class="vf-label">Village</span>
+    <!-- populated by renderVillageFilter() -->
   </section>
 
   <section class="cards-wrap">
@@ -748,6 +819,7 @@ const VILLAGE_PALETTE = [
   {bg:'#E3E8EC', fg:'#45565E'},
 ];
 let villageColorMap = {};
+let activeVillageFilter = ''; // '' means All
 
 /* ---------------------------------------------------------------
    Helpers
@@ -795,8 +867,78 @@ function b64ToUtf8(str){ return decodeURIComponent(escape(atob(str))); }
 function render(){
   buildVillageColors();
   populateFilterOptions();
+  renderVillageFilter();
   renderCards();
   updateStats();
+}
+
+// Village filter colors — vivid, distinct
+const VF_COLORS = [
+  { bg:'#1E4A45', fg:'#ffffff' }, // teal
+  { bg:'#C1543A', fg:'#ffffff' }, // terracotta
+  { bg:'#5B6EC1', fg:'#ffffff' }, // indigo
+  { bg:'#7A9E3B', fg:'#ffffff' }, // green
+  { bg:'#9B4FA5', fg:'#ffffff' }, // purple
+  { bg:'#D4832A', fg:'#ffffff' }, // amber
+];
+
+function renderVillageFilter(){
+  const strip = document.getElementById('villageFilterStrip');
+  if (!strip) return;
+  const villages = getUniqueVillages();
+
+  // "All" button
+  const allCount = appData.customers.filter(c => c.name).length;
+  const allActive = activeVillageFilter === '';
+  let html = `<div class="vf-btn ${allActive ? 'vf-active' : 'vf-inactive'}"
+    style="background:${allActive ? '#2A2825' : '#E4DECF'};color:${allActive ? '#fff' : '#2A2825'};border-color:${allActive ? '#2A2825' : '#E4DECF'};"
+    onclick="setVillageFilter('')">
+    All <span class="vf-count">${allCount}</span>
+  </div>`;
+
+  villages.forEach((v, i) => {
+    const col = VF_COLORS[i % VF_COLORS.length];
+    const count = appData.customers.filter(c => c.villageId === v.villageId && c.name).length;
+    const label = teluguMode ? (v.village_te || v.village_en) : v.village_en;
+    const isActive = activeVillageFilter === v.villageId;
+    html += `<div class="vf-btn ${isActive ? 'vf-active' : 'vf-inactive'}"
+      style="background:${col.bg};color:${col.fg};border-color:${col.bg};"
+      data-village-id="${escapeHtml(v.villageId)}"
+      onclick="setVillageFilter('${escapeHtml(v.villageId)}')">
+      ${escapeHtml(label)} <span class="vf-count">${count}</span>
+    </div>`;
+  });
+
+  // Replace everything after the label span
+  const label = strip.querySelector('.vf-label');
+  strip.innerHTML = '';
+  if (label) strip.appendChild(label);
+  else strip.insertAdjacentHTML('afterbegin', '<span class="vf-label">Village</span>');
+  strip.insertAdjacentHTML('beforeend', html);
+}
+
+function setVillageFilter(villageId){
+  activeVillageFilter = villageId;
+  // Keep drawer select in sync
+  const sel = document.getElementById('villageFilter');
+  if (sel) {
+    sel.value = villageId;
+    // Update filter badge count
+    const badge = document.getElementById('filterBtnBadge');
+    if (badge) {
+      const searchEl = document.getElementById('searchInput');
+      let n = 0;
+      if (searchEl && searchEl.value.trim()) n++;
+      ['villageFilter','packageFilter','statusFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value) n++;
+      });
+      badge.textContent = n;
+      badge.classList.toggle('show', n > 0);
+    }
+  }
+  renderVillageFilter();
+  renderCards();
 }
 
 function populateFilterOptions(){
@@ -816,7 +958,7 @@ function populateFilterOptions(){
 
 function getFilteredCustomers(){
   const search = document.getElementById('searchInput').value.trim().toLowerCase();
-  const village = document.getElementById('villageFilter').value;
+  const village = activeVillageFilter !== '' ? activeVillageFilter : document.getElementById('villageFilter').value;
   const pkg = document.getElementById('packageFilter').value;
   const status = document.getElementById('statusFilter').value;
   return appData.customers.filter(c=>{
@@ -1465,12 +1607,20 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); })
   if(searchEl) searchEl.addEventListener('input', ()=>{ updateBadge(); renderCards(); });
   filterIds.forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.addEventListener('change', ()=>{ updateBadge(); renderCards(); });
+    if(el) el.addEventListener('change', ()=>{
+      if(id === 'villageFilter'){
+        activeVillageFilter = el.value;
+        renderVillageFilter();
+      }
+      updateBadge(); renderCards();
+    });
   });
 
   clearBtn.addEventListener('click', ()=>{
     if(searchEl) searchEl.value='';
     filterIds.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    activeVillageFilter = '';
+    renderVillageFilter();
     updateBadge(); renderCards();
   });
 })();
