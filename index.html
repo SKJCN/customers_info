@@ -470,8 +470,10 @@
       <span class="sync-pill" id="fileSyncStatus">Loading customers.json…</span>
       <span class="sync-pill" id="syncStatus">Not connected to GitHub</span>
       <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none;">
-      <button class="btn btn-ghost" id="loadJsonBtn" title="Pick the customers.json file from your computer">📂 Load JSON file</button>
-      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json from this page's folder">↻ Reload</button>
+      <input type="file" id="sankFileInput" accept="application/json,.json" style="display:none;">
+      <button class="btn btn-ghost" id="loadJsonBtn" title="Pick the customers.json file from your computer">📂 Load customers.json</button>
+      <button class="btn btn-ghost" id="loadSankBtn" title="Pick the sank.json file from your computer">📂 Load sank.json</button>
+      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json and sank.json from this page's folder">↻ Reload</button>
       <button class="btn btn-ghost" id="exportBtn">⬇ Export JSON</button>
       <button class="btn btn-ghost" id="settingsBtn">⚙ GitHub sync</button>
     </div>
@@ -651,8 +653,11 @@
       <label>Repository
         <input type="text" id="ghRepo" placeholder="my-customers">
       </label>
-      <label>File path
+      <label>Customers file path
         <input type="text" id="ghPath" value="customers.json">
+      </label>
+      <label>Sankarapuram file path
+        <input type="text" id="ghPathSank" value="sank.json">
       </label>
       <label>Branch
         <input type="text" id="ghBranch" value="main">
@@ -705,8 +710,9 @@
 const DEFAULT_DATA = {"packages":[],"customers":[],"villages":[]};
 let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-let ghConfig = { owner:'', repo:'', path:'customers.json', branch:'main', token:'' };
-let currentSha = null;
+let ghConfig = { owner:'', repo:'', path:'customers.json', sankPath:'sank.json', branch:'main', token:'' };
+let currentSha = null;       // sha for customers.json on GitHub
+let currentShaSank = null;   // sha for sank.json on GitHub
 let dirty = false;
 let editingCustomerId = null;
 let editingPackageId = null;
@@ -724,13 +730,75 @@ let editingPackageId = null;
      no server needed.
 --------------------------------------------------------------- */
 const JSON_FILE_NAME = 'customers.json';
+const SANK_FILE_NAME = 'sank.json';
+const SANK_VILLAGE_ID = 'sank'; // villageId used for Sankarapuram in sank.json
 let lastLoadedJsonText = JSON.stringify(DEFAULT_DATA);
+let lastLoadedSankText = null; // null = not loaded yet (sank.json is optional)
 let fileSyncMode = 'pending'; // 'fetch' | 'manual' | 'pending'
 let filePollTimer = null;
+
+// Raw (untagged) data as last read from each file, kept so we can
+// re-export each file in its own original shape.
+let rawCustomersData = null;
+let rawSankData = null;
 
 function isValidRegister(parsed){
   return parsed && Array.isArray(parsed.customers) && Array.isArray(parsed.packages);
   // villages array is optional but supported
+}
+
+/* ---------------------------------------------------------------
+   Merging customers.json + sank.json into one working appData.
+   Every customer/village gets a hidden _file tag so we know which
+   file it belongs to when saving, exporting, or syncing to GitHub.
+--------------------------------------------------------------- */
+function tagCustomers(list, file){
+  return (list || []).map(c => ({ ...c, _file: file }));
+}
+function tagVillages(list, file){
+  return (list || []).map(v => ({ ...v, _file: file }));
+}
+function mergeRegisters(customersData, sankData){
+  const base = customersData || DEFAULT_DATA;
+  const sank = sankData || { packages: [], villages: [], customers: [] };
+
+  // Packages: merge by id, customers.json's version wins on conflict.
+  const pkgMap = new Map();
+  (base.packages || []).forEach(p => pkgMap.set(p.id, p));
+  (sank.packages || []).forEach(p => { if (!pkgMap.has(p.id)) pkgMap.set(p.id, p); });
+
+  // Villages: merge by villageId, tag each with its source file.
+  const villageMap = new Map();
+  tagVillages(base.villages, JSON_FILE_NAME).forEach(v => villageMap.set(v.villageId, v));
+  tagVillages(sank.villages, SANK_FILE_NAME).forEach(v => { if (!villageMap.has(v.villageId)) villageMap.set(v.villageId, v); });
+
+  const customers = [
+    ...tagCustomers(base.customers, JSON_FILE_NAME),
+    ...tagCustomers(sank.customers, SANK_FILE_NAME)
+  ];
+
+  return {
+    packages: [...pkgMap.values()],
+    villages: [...villageMap.values()],
+    customers
+  };
+}
+function stripFileTag(obj){
+  const { _file, ...rest } = obj;
+  return rest;
+}
+/* Rebuild the two source-file objects (in their original shape) from
+   the current merged appData — used for export & GitHub save. */
+function splitAppDataByFile(){
+  const custCustomers = appData.customers.filter(c => c._file !== SANK_FILE_NAME).map(stripFileTag);
+  const sankCustomers  = appData.customers.filter(c => c._file === SANK_FILE_NAME).map(stripFileTag);
+  const custVillages = appData.villages.filter(v => v._file !== SANK_FILE_NAME).map(stripFileTag);
+  const sankVillages  = appData.villages.filter(v => v._file === SANK_FILE_NAME).map(stripFileTag);
+  const packages = appData.packages.map(p => ({ ...p }));
+
+  const customersJson = { packages, villages: custVillages, customers: custCustomers };
+  const sankJson = { packages, villages: sankVillages, customers: sankCustomers };
+  return { customersJson, sankJson };
 }
 
 function setFileSyncStatus(text, kind){
@@ -742,35 +810,47 @@ function setFileSyncStatus(text, kind){
   if (kind === 'warn') pill.classList.add('dirty');
 }
 
-async function fetchCustomersJson(silent){
-  try {
-    const res = await fetch(JSON_FILE_NAME + '?t=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const parsed = JSON.parse(text);
-    if (!isValidRegister(parsed)) throw new Error('customers.json is missing "customers"/"packages" arrays');
+async function fetchJsonFile(fileName){
+  const res = await fetch(fileName + '?t=' + Date.now(), { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  const parsed = JSON.parse(text);
+  if (!isValidRegister(parsed)) throw new Error(`${fileName} is missing "customers"/"packages" arrays`);
+  return { text, parsed };
+}
 
-    if (text === lastLoadedJsonText){
-      if (!silent) setFileSyncStatus(`Synced with ${JSON_FILE_NAME}`, 'ok');
-      return true; // nothing changed
-    }
-    if (dirty){
-      // Don't clobber unsaved edits — just let the user know.
-      setFileSyncStatus(`${JSON_FILE_NAME} changed on disk — click ↻ Reload to refresh (you have unsaved edits)`, 'warn');
-      return true;
-    }
-    lastLoadedJsonText = text;
-    appData = parsed;
-    fileSyncMode = 'fetch';
-    render();
-    setFileSyncStatus(`Synced with ${JSON_FILE_NAME} · ${new Date().toLocaleTimeString()}`, 'ok');
-    return true;
-  } catch(err){
+async function fetchCustomersJson(silent){
+  const custResult = await fetchJsonFile(JSON_FILE_NAME).catch(err => ({ error: err }));
+  const sankResult = await fetchJsonFile(SANK_FILE_NAME).catch(err => ({ error: err }));
+
+  if (custResult.error && sankResult.error){
     if (!silent){
-      setFileSyncStatus(`Couldn't auto-load ${JSON_FILE_NAME} (${err.message}). Use "📂 Load JSON file" instead.`, 'warn');
+      setFileSyncStatus(`Couldn't auto-load ${JSON_FILE_NAME} or ${SANK_FILE_NAME} (${custResult.error.message}). Use the "📂 Load…" buttons instead.`, 'warn');
     }
     return false;
   }
+
+  const custChanged = !custResult.error && custResult.text !== lastLoadedJsonText;
+  const sankChanged = !sankResult.error && sankResult.text !== lastLoadedSankText;
+
+  if (!custChanged && !sankChanged){
+    if (!silent) setFileSyncStatus(`Synced with ${JSON_FILE_NAME}${sankResult.error ? '' : ' + ' + SANK_FILE_NAME}`, 'ok');
+    return true; // nothing changed
+  }
+  if (dirty){
+    setFileSyncStatus(`Files changed on disk — click ↻ Reload to refresh (you have unsaved edits)`, 'warn');
+    return true;
+  }
+
+  if (!custResult.error){ rawCustomersData = custResult.parsed; lastLoadedJsonText = custResult.text; }
+  if (!sankResult.error){ rawSankData = sankResult.parsed; lastLoadedSankText = sankResult.text; }
+
+  appData = mergeRegisters(rawCustomersData, rawSankData);
+  fileSyncMode = 'fetch';
+  render();
+  const note = sankResult.error ? ` (${SANK_FILE_NAME} not found — that village won't show until it's loaded)` : '';
+  setFileSyncStatus(`Synced with ${JSON_FILE_NAME} + ${SANK_FILE_NAME}${note} · ${new Date().toLocaleTimeString()}`, sankResult.error ? 'warn' : 'ok');
+  return true;
 }
 
 function startFilePolling(){
@@ -784,19 +864,25 @@ async function initJsonFileSync(){
     startFilePolling();
   } else {
     fileSyncMode = 'manual';
-    setFileSyncStatus(`Using built-in data — pick your ${JSON_FILE_NAME} to load it`, 'warn');
+    setFileSyncStatus(`Using built-in data — pick your ${JSON_FILE_NAME} / ${SANK_FILE_NAME} to load them`, 'warn');
   }
 }
 
-function loadJsonFromFile(file){
+function loadJsonFromFile(file, target){
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const text = String(reader.result);
       const parsed = JSON.parse(text);
       if (!isValidRegister(parsed)) throw new Error('Missing "customers"/"packages" arrays');
-      lastLoadedJsonText = text;
-      appData = parsed;
+      if (target === 'sank'){
+        rawSankData = parsed;
+        lastLoadedSankText = text;
+      } else {
+        rawCustomersData = parsed;
+        lastLoadedJsonText = text;
+      }
+      appData = mergeRegisters(rawCustomersData, rawSankData);
       dirty = false;
       fileSyncMode = 'manual';
       if (filePollTimer) clearInterval(filePollTimer);
@@ -965,7 +1051,7 @@ function getFilteredCustomers(){
     if (search && !(
       c.name.toLowerCase().includes(search) ||
       c.phone.includes(search) ||
-      c.id.toLowerCase().includes(search)
+      c.box_id.toLowerCase().includes(search)
     )) return false;
     if (village && c.villageId !== village) return false;
     if (pkg && c.packageId !== pkg) return false;
@@ -997,16 +1083,16 @@ function renderCards(){
     const price = pkg ? formatINR(pkg.price) : '—';
     const pkgLabel = pkg ? `${escapeHtml(pkg.name)}${pkg.speed ? ' · ' + escapeHtml(pkg.speed) : ''}` : '—';
 
-    return `<div class="customer-card" id="card-${c.id}">
+    return `<div class="customer-card" id="card-${c.box_id}">
       <div class="card-face" style="cursor:default;">
         <div class="card-avatar-wrap ${isActive ? 'active' : 'inactive'}">
           <div class="card-avatar" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(initials)}</div>
         </div>
         <div class="card-main">
           <div class="card-name">${escapeHtml(getDisplayName(c))}</div>
-          <div class="card-id">${escapeHtml(c.id)}</div>
+          <div class="card-id">${escapeHtml(c.box_id)}</div>
         </div>
-        <button class="card-view-btn" onclick="openCustomerDetails('${c.id}')" title="View details">View details</button>
+        <button class="card-view-btn" data-box-id="${escapeHtml(c.box_id)}" title="View details">View details</button>
       </div>
     </div>`;
   }).join('');
@@ -1021,7 +1107,7 @@ function renderCards(){
    its own close button, instead of a separate popup window/tab.
 --------------------------------------------------------------- */
 function openCustomerDetails(id){
-  const c = appData.customers.find(x => x.id === id);
+  const c = appData.customers.find(x => String(x.box_id) === String(id));
   if (!c) return;
   const pkg = getPackage(c.packageId);
   const isActive = c.status === 'active';
@@ -1034,14 +1120,14 @@ function openCustomerDetails(id){
 
   document.getElementById('detailsRows').innerHTML = `
     <div class="detail-row">
-      <span class="detail-label">ID</span>
+      <span class="detail-label">Box</span>
       <span class="detail-value mono">
-        <span id="detailIdCopy" onclick="copyDetailId('${escapeHtml(c.id)}')" title="Click to copy ID" style="
+        <span id="detailIdCopy" onclick="copyDetailId('${escapeHtml(c.box_id)}')" title="Click to copy Box No" style="
           display:inline-flex;align-items:center;gap:6px;
           cursor:pointer;padding:2px 7px;margin:-2px -7px;
           border-radius:5px;transition:background .15s;
         " onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
-          ${escapeHtml(c.id)}
+          ${escapeHtml(c.box_id)}
           <span id="detailIdCopyIcon" style="display:none;align-items:center;color:var(--success);">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1.5,7 5,10.5 11.5,3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
@@ -1060,12 +1146,11 @@ function openCustomerDetails(id){
     <div class="detail-row"><span class="detail-label">Village</span><span class="detail-value">${escapeHtml(getVillageName(c.villageId))}</span></div>
     <div class="detail-row"><span class="detail-label">Package</span><span class="detail-value">${pkg ? escapeHtml(pkg.name) : '—'}</span></div>
     <div class="detail-row"><span class="detail-label">Price</span><span class="detail-value">${pkg ? escapeHtml(formatINR(pkg.price)) : '—'}</span></div>
-    <div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">${escapeHtml(c.joinDate || '—')}</span></div>
-    <div class="detail-row"><span class="detail-label">Expires</span><span class="detail-value">${escapeHtml(c.expiryDate || '—')}</span></div>
+    <div class="detail-row"><span class="detail-label">Balance</span><span class="detail-value">${escapeHtml(formatINR(c.balance || 0))}</span></div>
   `;
 
-  document.getElementById('detailsEditBtn').onclick = ()=>{ closeCustomerDetails(); openCustomerModal(c.id); };
-  document.getElementById('detailsDeleteBtn').onclick = ()=>{ closeCustomerDetails(); deleteCustomer(c.id); };
+  document.getElementById('detailsEditBtn').onclick = ()=>{ closeCustomerDetails(); openCustomerModal(c.box_id); };
+  document.getElementById('detailsDeleteBtn').onclick = ()=>{ closeCustomerDetails(); deleteCustomer(c.box_id); };
 
   document.getElementById('customerDetailsModal').classList.remove('hidden');
 }
@@ -1153,7 +1238,7 @@ function updateSyncPill(){
    Customer CRUD
 --------------------------------------------------------------- */
 function toggleStatus(id){
-  const c = appData.customers.find(c=>c.id===id);
+  const c = appData.customers.find(c=>String(c.box_id)===String(id));
   if (!c) return;
   c.status = c.status === 'active' ? 'inactive' : 'active';
   render();
@@ -1162,10 +1247,23 @@ function toggleStatus(id){
 
 function generateCustomerId(){
   const nums = appData.customers
-    .map(c => parseInt(String(c.id).replace(/\D/g,''), 10))
+    .filter(c => c._file !== SANK_FILE_NAME)
+    .map(c => parseInt(String(c.box_id).replace(/\D/g,''), 10))
     .filter(n => !isNaN(n));
   const next = (nums.length ? Math.max(...nums) : 0) + 1;
   return 'C' + String(next).padStart(4,'0');
+}
+function generateSankId(){
+  // sank.json uses plain incrementing integers as box_ids ("1", "2", …)
+  const nums = appData.customers
+    .filter(c => c._file === SANK_FILE_NAME)
+    .map(c => parseInt(String(c.box_id), 10))
+    .filter(n => !isNaN(n));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return String(next);
+}
+function fileForVillage(villageId){
+  return villageId === SANK_VILLAGE_ID ? SANK_FILE_NAME : JSON_FILE_NAME;
 }
 
 function openCustomerModal(id=null){
@@ -1182,8 +1280,8 @@ function openCustomerModal(id=null){
     getUniqueVillages().map(v=>`<option value="${escapeHtml(v.villageId)}">${escapeHtml(v.village_en)}${v.village_te ? ' / ' + escapeHtml(v.village_te) : ''}</option>`).join('');
 
   if (id){
-    const c = appData.customers.find(c=>c.id===id);
-    title.textContent = `Edit customer — ${c.id}`;
+    const c = appData.customers.find(c=>String(c.box_id)===String(id));
+    title.textContent = `Edit customer — ${c.box_id}`;
     document.getElementById('custName').value = c.name;
     document.getElementById('custPhone').value = c.phone;
     document.getElementById('custVillage').value = c.villageId || '';
@@ -1224,11 +1322,15 @@ function handleCustomerSubmit(e){
     address: document.getElementById('custAddress').value.trim(),
   };
 
+  const targetFile = fileForVillage(data.villageId);
+
   if (editingCustomerId){
-    const c = appData.customers.find(c=>c.id===editingCustomerId);
+    const c = appData.customers.find(c=>String(c.box_id)===String(editingCustomerId));
     Object.assign(c, data);
+    c._file = targetFile; // move between customers.json / sank.json if village changed
   } else {
-    data.id = generateCustomerId();
+    data.box_id = targetFile === SANK_FILE_NAME ? generateSankId() : generateCustomerId();
+    data._file = targetFile;
     appData.customers.push(data);
   }
 
@@ -1238,10 +1340,10 @@ function handleCustomerSubmit(e){
 }
 
 function deleteCustomer(id){
-  const c = appData.customers.find(c=>c.id===id);
+  const c = appData.customers.find(c=>String(c.box_id)===String(id));
   if (!c) return;
-  if (!confirm(`Remove ${c.name} (${c.id}) from the register? This cannot be undone here.`)) return;
-  appData.customers = appData.customers.filter(c=>c.id!==id);
+  if (!confirm(`Remove ${c.name} (${c.box_id}) from the register? This cannot be undone here.`)) return;
+  appData.customers = appData.customers.filter(c=>String(c.box_id)!==String(id));
   render();
   markDirty();
 }
@@ -1353,6 +1455,7 @@ function openSettingsModal(){
   document.getElementById('ghOwner').value = ghConfig.owner;
   document.getElementById('ghRepo').value = ghConfig.repo;
   document.getElementById('ghPath').value = ghConfig.path;
+  document.getElementById('ghPathSank').value = ghConfig.sankPath;
   document.getElementById('ghBranch').value = ghConfig.branch;
   document.getElementById('ghToken').value = ghConfig.token;
   document.getElementById('settingsModal').classList.remove('hidden');
@@ -1365,6 +1468,7 @@ function readGhFormToConfig(){
   ghConfig.owner = document.getElementById('ghOwner').value.trim();
   ghConfig.repo = document.getElementById('ghRepo').value.trim();
   ghConfig.path = document.getElementById('ghPath').value.trim() || 'customers.json';
+  ghConfig.sankPath = document.getElementById('ghPathSank').value.trim() || 'sank.json';
   ghConfig.branch = document.getElementById('ghBranch').value.trim() || 'main';
   ghConfig.token = document.getElementById('ghToken').value.trim();
 }
@@ -1377,6 +1481,25 @@ function ghLog(msg, isError=false){
   log.classList.toggle('error', isError);
 }
 
+async function ghFetchFile(path){
+  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(ghConfig.branch)}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `token ${ghConfig.token}`, Accept: 'application/vnd.github+json' }
+  });
+  if (res.status === 404) return { sha: null, parsed: null };
+  if (!res.ok){
+    const errJson = await res.json().catch(()=>({}));
+    throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
+  }
+  const json = await res.json();
+  const content = b64ToUtf8(json.content.replace(/\n/g,''));
+  const parsed = JSON.parse(content);
+  if (!Array.isArray(parsed.customers) || !Array.isArray(parsed.packages)){
+    throw new Error(`${path} does not look like a SKJCN register (expected "customers" and "packages" arrays).`);
+  }
+  return { sha: json.sha, parsed };
+}
+
 async function loadFromGitHub(){
   readGhFormToConfig();
   if (!ghConfig.owner || !ghConfig.repo || !ghConfig.token){
@@ -1384,37 +1507,52 @@ async function loadFromGitHub(){
     return;
   }
   persistGhConfig();
-  ghLog(`Loading ${ghConfig.path} from ${ghConfig.owner}/${ghConfig.repo}@${ghConfig.branch}…`);
+  ghLog(`Loading ${ghConfig.path} + ${ghConfig.sankPath} from ${ghConfig.owner}/${ghConfig.repo}@${ghConfig.branch}…`);
   try {
-    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(ghConfig.path)}?ref=${encodeURIComponent(ghConfig.branch)}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `token ${ghConfig.token}`, Accept: 'application/vnd.github+json' }
-    });
-    if (res.status === 404){
-      currentSha = null;
-      ghLog('File not found in repo yet — it will be created the first time you save.');
-      updateSyncPill();
-      return;
-    }
-    if (!res.ok){
-      const errJson = await res.json().catch(()=>({}));
-      throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
-    }
-    const json = await res.json();
-    currentSha = json.sha;
-    const content = b64ToUtf8(json.content.replace(/\n/g,''));
-    const parsed = JSON.parse(content);
-    if (!Array.isArray(parsed.customers) || !Array.isArray(parsed.packages)){
-      throw new Error('That file does not look like a SKJCN register (expected "customers" and "packages" arrays).');
-    }
-    appData = parsed;
+    const custResult = await ghFetchFile(ghConfig.path);
+    currentSha = custResult.sha;
+    if (!custResult.parsed) ghLog(`${ghConfig.path} not found in repo yet — it will be created the first time you save.`);
+
+    const sankResult = await ghFetchFile(ghConfig.sankPath);
+    currentShaSank = sankResult.sha;
+    if (!sankResult.parsed) ghLog(`${ghConfig.sankPath} not found in repo yet — it will be created the first time you save.`);
+
+    rawCustomersData = custResult.parsed || DEFAULT_DATA;
+    rawSankData = sankResult.parsed || { packages: [], villages: [], customers: [] };
+    appData = mergeRegisters(rawCustomersData, rawSankData);
     dirty = false;
     render();
     updateSyncPill();
-    ghLog(`Loaded ${parsed.customers.length} customers and ${parsed.packages.length} packages.`);
+    ghLog(`Loaded ${appData.customers.length} customers and ${appData.packages.length} packages total.`);
   } catch(err){
     ghLog('Load failed: ' + err.message, true);
   }
+}
+
+async function ghPutFile(path, obj, sha){
+  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(path)}`;
+  const body = {
+    message: `Update ${path} — ${new Date().toISOString()}`,
+    content: utf8ToB64(JSON.stringify(obj, null, 2)),
+    branch: ghConfig.branch,
+  };
+  if (sha) body.sha = sha;
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${ghConfig.token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    const errJson = await res.json().catch(()=>({}));
+    throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
+  }
+  const json = await res.json();
+  return json.content.sha;
 }
 
 async function saveToGitHub(){
@@ -1424,49 +1562,39 @@ async function saveToGitHub(){
     return;
   }
   persistGhConfig();
-  ghLog(`Saving to ${ghConfig.owner}/${ghConfig.repo}/${ghConfig.path}…`);
+  ghLog(`Saving to ${ghConfig.owner}/${ghConfig.repo} — ${ghConfig.path} & ${ghConfig.sankPath}…`);
   try {
-    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(ghConfig.path)}`;
-    const body = {
-      message: `Update customer register — ${new Date().toISOString()}`,
-      content: utf8ToB64(JSON.stringify(appData, null, 2)),
-      branch: ghConfig.branch,
-    };
-    if (currentSha) body.sha = currentSha;
-
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: `token ${ghConfig.token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok){
-      const errJson = await res.json().catch(()=>({}));
-      throw new Error(`${res.status} ${res.statusText}${errJson.message ? ' — ' + errJson.message : ''}`);
-    }
-    const json = await res.json();
-    currentSha = json.content.sha;
+    const { customersJson, sankJson } = splitAppDataByFile();
+    currentSha = await ghPutFile(ghConfig.path, customersJson, currentSha);
+    ghLog(`Saved ${ghConfig.path} (${customersJson.customers.length} customers).`);
+    currentShaSank = await ghPutFile(ghConfig.sankPath, sankJson, currentShaSank);
+    ghLog(`Saved ${ghConfig.sankPath} (${sankJson.customers.length} customers).`);
     dirty = false;
     updateSyncPill();
-    ghLog('Saved successfully.');
+    ghLog('All files saved successfully.');
   } catch(err){
     ghLog('Save failed: ' + err.message, true);
   }
 }
 
-function exportJson(){
-  const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+function downloadJson(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'customers.json';
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function exportJson(){
+  const { customersJson, sankJson } = splitAppDataByFile();
+  downloadJson(customersJson, JSON_FILE_NAME);
+  // Stagger the second download slightly — some browsers block
+  // simultaneous multi-file downloads triggered in the same tick.
+  setTimeout(() => downloadJson(sankJson, SANK_FILE_NAME), 300);
 }
 
 function copyPhone(phone){
@@ -1533,13 +1661,30 @@ function bindEvents(){
 
   document.getElementById('closeDetailsBtn').addEventListener('click', closeCustomerDetails);
 
+  // View details buttons are rendered dynamically inside #cardsGrid, so we
+  // use event delegation on the grid instead of inline onclick handlers.
+  // This also avoids breaking when a box_id contains a quote or other
+  // special character (inline onclick="...('${box_id}')" would silently
+  // fail to fire in that case).
+  document.getElementById('cardsGrid').addEventListener('click', (e)=>{
+    const btn = e.target.closest('.card-view-btn');
+    if (!btn) return;
+    openCustomerDetails(btn.dataset.boxId);
+  });
+
   document.getElementById('exportBtn').addEventListener('click', exportJson);
 
   document.getElementById('reloadJsonBtn').addEventListener('click', ()=>fetchCustomersJson(false));
   document.getElementById('loadJsonBtn').addEventListener('click', ()=>document.getElementById('jsonFileInput').click());
   document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
     const file = e.target.files && e.target.files[0];
-    if (file) loadJsonFromFile(file);
+    if (file) loadJsonFromFile(file, 'customers');
+    e.target.value = '';
+  });
+  document.getElementById('loadSankBtn').addEventListener('click', ()=>document.getElementById('sankFileInput').click());
+  document.getElementById('sankFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (file) loadJsonFromFile(file, 'sank');
     e.target.value = '';
   });
 
