@@ -1,0 +1,533 @@
+{
+  "packages": [
+    {
+      "id": "pkg1",
+      "name": "Budget",
+      "price": 280
+    },
+    {
+      "id": "pkg2",
+      "name": "Ultimate",
+      "price": 300
+    },
+    {
+      "id": "pkg3",
+      "name": "single",
+      "price": 250
+    },
+    {
+      "id": "pkg4",
+      "name": "Ultra",
+      "price": 1299
+    }
+  ],
+  "villages": [
+    {
+      "village_en": "Sankarapuram",
+      "village_te": "శంకరాపురం",
+      "villageId": "sank"
+    }   
+  ],
+  "customers": [
+    {
+      "id": "1",
+      "name": "Bhagavan Narayana",
+      "telugu_name": "భగవాన్ నారాయణ",
+      "box_no": "70564580549",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    }, 
+    {
+      "id": "2",
+      "name": "Sri hari",
+      "telugu_name": "శ్రీ హరి",
+      "box_no": "157500036C97",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "name": "Ravi",
+      "telugu_name": "రవి",
+      "box_no": "70532680611",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "4",
+      "name": "Lakshmamma",
+      "telugu_name": "లక్ష్మమ్మ",
+      "box_no": "157500049320",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "name": "Chandrababu",
+      "telugu_name": "చంద్రబాబు",
+      "box_no": "70532397414",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "Karrodu",
+      "telugu_name": "కార్రోడు",
+      "box_no": "70532714238",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "7",
+      "name": "Venkatadri Naidu - Leelavathamma",
+      "telugu_name": "వెంకటాద్రి నాయుడు - లీలావతమ్మ",
+      "box_no": "70532116764",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "8",
+      "name": "Chandra",
+      "telugu_name": "చంద్ర",
+      "box_no": "AC2008322641",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "9",
+      "name": "Chenchu Papaiah",
+      "telugu_name": "చెంచు పాపయ్య",
+      "box_no": "111409016610",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "10",
+      "name": "Ragavaiah",
+      "telugu_name": "రఘవయ్య",
+      "box_no": "AC2207357831",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "11",
+      "name": "R Prasanna",
+      "telugu_name": "R ప్రసన్న",
+      "box_no": "70532636233",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "12",
+      "name": "Sarojanamma",
+      "telugu_name": "సరోజనమ్మ",
+      "box_no": "1575000493D8",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "13",
+      "name": "Siva",
+      "telugu_name": "శివ",
+      "box_no": "AC2207342006",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "14",
+      "name": "Chamundi",
+      "telugu_name": "చాముండి",
+      "box_no": "70532793794",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "15",
+      "name": "Munemma",
+      "telugu_name": "మునెమ్మ",
+      "box_no": "144400077D2E",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "16",
+      "name": "Subramanyam",
+      "telugu_name": "సుబ్రహ్మణ్యం",
+      "box_no": "157500036C54",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "17",
+      "name": "Yellayya",
+      "telugu_name": "ఏల్లయ్య",
+      "box_no": "AC2207347651",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "18",
+      "name": "Murali",
+      "telugu_name": "మురళి",
+      "box_no": "70594153176",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "19",
+      "name": "Balagunnayya",
+      "telugu_name": "బాలగున్నయ్య",
+      "box_no": "111410062272",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "20",
+      "name": "Krishnamma",
+      "telugu_name": "కృష్ణమ్మ",
+      "box_no": "AC2207347660",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "21",
+      "name": "Subramaniam Purri",
+      "telugu_name": "సుబ్రహ్మణ్యం పుర్రి",
+      "box_no": "AC1806118699",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "22",
+      "name": "Chinnayya",
+      "telugu_name": "చిన్నయ్య",
+      "box_no": "70532322313",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "23",
+      "name": "P Gunnayya",
+      "telugu_name": "P గున్నయ్య",
+      "box_no": "70424377250",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "24",
+      "name": "Venkatamma Chengayya",
+      "telugu_name": "వెంకటమ్మ చెంగయ్య",
+      "box_no": "83330044219B",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "25",
+      "name": "Kaalappa",
+      "telugu_name": "కాళప్ప",
+      "box_no": "70532370932",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "26",
+      "name": "N Nagaraju",
+      "telugu_name": "N నాగరాజు",
+      "box_no": "70595273395",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "27",
+      "name": "Sundarayya",
+      "telugu_name": "సుందరయ్య",
+      "box_no": "70532370932",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "28",
+      "name": "Kumar",
+      "telugu_name": "కుమార్",
+      "box_no": "AC2207357833",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "29",
+      "name": "Tilak",
+      "telugu_name": "తిలక్",
+      "box_no": "70532626119",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "30",
+      "name": "Dharamayya",
+      "telugu_name": "ధరమయ్య",
+      "box_no": "70594102199",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "31",
+      "name": "Bhalaramaiah",
+      "telugu_name": "భలరామయ్య",
+      "box_no": "AC2001296396",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "32",
+      "name": "Subbu",
+      "telugu_name": "సుబ్బు",
+      "box_no": "70532350819",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "33",
+      "name": "Sudhakar",
+      "telugu_name": "సుధాకర్",
+      "box_no": "157500036ABA",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "34",
+      "name": "Rangayya",
+      "telugu_name": "రంగయ్య",
+      "box_no": "157500042550",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "35",
+      "name": "Raja",
+      "telugu_name": "రాజా",
+      "box_no": "70424574013",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "36",
+      "name": "Chakravarthy",
+      "telugu_name": "చక్రవర్తి",
+      "box_no": "157500042601",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "37",
+      "name": "R Surendra",
+      "telugu_name": "R సురేంద్ర",
+      "box_no": "70532789511",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "38",
+      "name": "Yellaiah",
+      "telugu_name": "ఏల్లయ్య",
+      "box_no": "1575000263C8",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "39",
+      "name": "Rajaiah",
+      "telugu_name": "రాజయ్య",
+      "box_no": "AC2008330121",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "40",
+      "name": "Bhatheyya",
+      "telugu_name": "భత్తయ్య",
+      "box_no": "70564058009",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "41",
+      "name": "Venkatamma - Yellaiah",
+      "telugu_name": "వెంకటమ్మ - ఏల్లయ్య",
+      "box_no": "AC2207353457",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "42",
+      "name": "Balakrishna",
+      "telugu_name": "బాలకృష్ణ",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "43",
+      "name": "Bharatamma - Rupesh",
+      "telugu_name": "భారతమ్మ - రూపేష్",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "44",
+      "name": "Sumathi",
+      "telugu_name": "సుమతి",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "45",
+      "name": "Muniraja",
+      "telugu_name": "మునిరాజా",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "46",
+      "name": "Koti Lingam",
+      "telugu_name": "కోటి లింగం",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "47",
+      "name": "Paalu Bhathaiah",
+      "telugu_name": "పాలు భత్తయ్య",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "48",
+      "name": "Bujjamma",
+      "telugu_name": "బుజ్జమ్మ",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "49",
+      "name": "Amma Lingam",
+      "telugu_name": "అమ్మ లింగం",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    },
+    {
+      "id": "50",
+      "name": "Srinivasula Naidu",
+      "telugu_name": "శ్రీనివాసుల నాయుడు",
+      "box_no": "",
+      "phone": "00000 00000",
+      "villageId": "sank",
+      "packageId": "pkg1",
+      "status": "active"
+    }
+  ]
+}
