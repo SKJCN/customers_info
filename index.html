@@ -159,7 +159,7 @@
 
   .card-avatar-wrap{
     position:relative;flex-shrink:0;
-    width:46px;height:46px;
+    width:54px;height:54px;
     display:flex;align-items:center;justify-content:center;
     border-radius:50%;
     padding:3px;
@@ -167,9 +167,11 @@
   .card-avatar-wrap.active{ box-shadow:0 0 0 2.5px var(--success); }
   .card-avatar-wrap.inactive{ box-shadow:0 0 0 2.5px var(--danger); }
   .card-avatar{
-    width:40px;height:40px;border-radius:50%;
+    width:48px;height:48px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    font-family:var(--font-display);font-size:15px;font-weight:600;
+    font-family:var(--font-mono);font-size:11px;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    padding:0 4px;
   }
   .card-main{ flex:1; min-width:0; }
   .card-name{
@@ -758,6 +760,14 @@ function tagCustomers(list, file){
 function tagVillages(list, file){
   return (list || []).map(v => ({ ...v, _file: file }));
 }
+/* sank.json uses "id" (plain running number) + "box_no" (the actual
+   box/meter number) instead of the single "box_id" field the rest of
+   the app keys off of. Normalize it here so cards, search, edit and
+   delete all work the same way regardless of source file. */
+function normalizeSankCustomer(c){
+  const boxId = (c.box_no && String(c.box_no).trim()) ? c.box_no : c.id;
+  return { ...c, box_id: boxId };
+}
 function mergeRegisters(customersData, sankData){
   const base = customersData || DEFAULT_DATA;
   const sank = sankData || { packages: [], villages: [], customers: [] };
@@ -774,7 +784,7 @@ function mergeRegisters(customersData, sankData){
 
   const customers = [
     ...tagCustomers(base.customers, JSON_FILE_NAME),
-    ...tagCustomers(sank.customers, SANK_FILE_NAME)
+    ...tagCustomers((sank.customers || []).map(normalizeSankCustomer), SANK_FILE_NAME)
   ];
 
   return {
@@ -787,11 +797,15 @@ function stripFileTag(obj){
   const { _file, ...rest } = obj;
   return rest;
 }
+function stripSankNormalization(obj){
+  const { _file, box_id, ...rest } = obj;
+  return rest;
+}
 /* Rebuild the two source-file objects (in their original shape) from
    the current merged appData — used for export & GitHub save. */
 function splitAppDataByFile(){
   const custCustomers = appData.customers.filter(c => c._file !== SANK_FILE_NAME).map(stripFileTag);
-  const sankCustomers  = appData.customers.filter(c => c._file === SANK_FILE_NAME).map(stripFileTag);
+  const sankCustomers  = appData.customers.filter(c => c._file === SANK_FILE_NAME).map(stripSankNormalization);
   const custVillages = appData.villages.filter(v => v._file !== SANK_FILE_NAME).map(stripFileTag);
   const sankVillages  = appData.villages.filter(v => v._file === SANK_FILE_NAME).map(stripFileTag);
   const packages = appData.packages.map(p => ({ ...p }));
@@ -1079,18 +1093,16 @@ function renderCards(){
     const pkg = getPackage(c.packageId);
     const vc = villageColorMap[c.villageId] || VILLAGE_PALETTE[0];
     const isActive = c.status === 'active';
-    const initials = c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
     const price = pkg ? formatINR(pkg.price) : '—';
     const pkgLabel = pkg ? `${escapeHtml(pkg.name)}${pkg.speed ? ' · ' + escapeHtml(pkg.speed) : ''}` : '—';
 
     return `<div class="customer-card" id="card-${c.box_id}">
       <div class="card-face" style="cursor:default;">
         <div class="card-avatar-wrap ${isActive ? 'active' : 'inactive'}">
-          <div class="card-avatar" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(initials)}</div>
+          <div class="card-avatar" style="background:${vc.bg};color:${vc.fg}">${escapeHtml(c.id !== undefined && c.id !== null && c.id !== '' ? c.id : c.box_id)}</div>
         </div>
         <div class="card-main">
           <div class="card-name">${escapeHtml(getDisplayName(c))}</div>
-          <div class="card-id">${escapeHtml(c.box_id)}</div>
         </div>
         <button class="card-view-btn" data-box-id="${escapeHtml(c.box_id)}" title="View details">View details</button>
       </div>
