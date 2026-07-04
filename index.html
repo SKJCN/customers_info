@@ -39,6 +39,28 @@
   }
   .app{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
 
+  /* ── Collapsible top section (header + dashboard + toolbar) ──
+     Used for "village focus mode": collapses away when a specific
+     village is selected so the cards take over the screen. */
+  .collapsible-top{
+    display:grid;
+    grid-template-rows:1fr;
+    transition:grid-template-rows .38s cubic-bezier(.4,0,.2,1), opacity .28s ease, margin-bottom .38s ease;
+    opacity:1;
+    margin-bottom:0;
+  }
+  .collapsible-top.collapsed{
+    grid-template-rows:0fr;
+    opacity:0;
+    margin-bottom:-20px; /* cancel out the .app flex gap so cards snap up flush */
+    pointer-events:none;
+  }
+  .collapsible-inner{
+    overflow:hidden;
+    min-height:0;
+    display:flex;flex-direction:column;gap:20px;
+  }
+
   /* Topbar */
   .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
   .brand{display:flex;align-items:center;gap:14px;}
@@ -383,6 +405,10 @@
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:12px 14px;
+    position:sticky;
+    top:0;
+    z-index:40;
+    box-shadow:0 6px 16px rgba(42,40,37,.08);
   }
   .village-filter-strip .vf-label{
     font-size:11px;font-weight:600;color:var(--muted);
@@ -442,6 +468,9 @@
 </head>
 <body>
 <div class="app">
+
+  <div class="collapsible-top" id="collapsibleTop">
+  <div class="collapsible-inner">
 
   <header class="topbar">
     <div class="brand">
@@ -514,6 +543,9 @@
       <span class="filter-btn-badge" id="filterBtnBadge"></span>
     </button>
   </section>
+
+  </div>
+  </div>
 
   <section class="village-filter-strip" id="villageFilterStrip">
     <span class="vf-label">Village</span>
@@ -1063,6 +1095,15 @@ function renderVillageFilter(){
   if (label) strip.appendChild(label);
   else strip.insertAdjacentHTML('afterbegin', '<span class="vf-label">Village</span>');
   strip.insertAdjacentHTML('beforeend', html);
+
+  // "Bookmark" behavior: picking a specific village collapses the
+  // header/dashboard/toolbar out of the way so the cards take over
+  // the screen, right under the (sticky) village strip. Picking
+  // "All" again brings the top section back.
+  const collapsibleTop = document.getElementById('collapsibleTop');
+  if (collapsibleTop){
+    collapsibleTop.classList.toggle('collapsed', activeVillageFilter !== '');
+  }
 }
 
 function setVillageFilter(villageId){
