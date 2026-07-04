@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKJCN - Customers list</title>
+<title>SKJCN - ACT customers list</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -452,7 +452,7 @@
       </svg>
       <div>
         <h1>Sri Kamakshi Jagan <br>Cable Network</h1>
-        <p><Cable connection register</p>
+        <p><b>ACT</b> Cable connection register</p>
       </div>
     </div>
     <div class="topbar-actions">
@@ -473,9 +473,11 @@
       <span class="sync-pill" id="syncStatus">Not connected to GitHub</span>
       <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none;">
       <input type="file" id="sankFileInput" accept="application/json,.json" style="display:none;">
+      <input type="file" id="kothFileInput" accept="application/json,.json" style="display:none;">
       <button class="btn btn-ghost" id="loadJsonBtn" title="Pick the customers.json file from your computer">📂 Load customers.json</button>
       <button class="btn btn-ghost" id="loadSankBtn" title="Pick the sank.json file from your computer">📂 Load sank.json</button>
-      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json and sank.json from this page's folder">↻ Reload</button>
+      <button class="btn btn-ghost" id="loadKothBtn" title="Pick the koth.json file from your computer">📂 Load koth.json</button>
+      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json, sank.json and koth.json from this page's folder">↻ Reload</button>
       <button class="btn btn-ghost" id="exportBtn">⬇ Export JSON</button>
       <button class="btn btn-ghost" id="settingsBtn">⚙ GitHub sync</button>
     </div>
@@ -661,6 +663,9 @@
       <label>Sankarapuram file path
         <input type="text" id="ghPathSank" value="sank.json">
       </label>
+      <label>Kothuru file path
+        <input type="text" id="ghPathKoth" value="koth.json">
+      </label>
       <label>Branch
         <input type="text" id="ghBranch" value="main">
       </label>
@@ -712,9 +717,10 @@
 const DEFAULT_DATA = {"packages":[],"customers":[],"villages":[]};
 let appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-let ghConfig = { owner:'', repo:'', path:'customers.json', sankPath:'sank.json', branch:'main', token:'' };
+let ghConfig = { owner:'', repo:'', path:'customers.json', sankPath:'sank.json', kothPath:'koth.json', branch:'main', token:'' };
 let currentSha = null;       // sha for customers.json on GitHub
 let currentShaSank = null;   // sha for sank.json on GitHub
+let currentShaKoth = null;   // sha for koth.json on GitHub
 let dirty = false;
 let editingCustomerId = null;
 let editingPackageId = null;
@@ -734,8 +740,11 @@ let editingPackageId = null;
 const JSON_FILE_NAME = 'customers.json';
 const SANK_FILE_NAME = 'sank.json';
 const SANK_VILLAGE_ID = 'sank'; // villageId used for Sankarapuram in sank.json
+const KOTH_FILE_NAME = 'koth.json';
+const KOTH_VILLAGE_ID = 'koth'; // villageId used for Kothuru in koth.json
 let lastLoadedJsonText = JSON.stringify(DEFAULT_DATA);
 let lastLoadedSankText = null; // null = not loaded yet (sank.json is optional)
+let lastLoadedKothText = null; // null = not loaded yet (koth.json is optional)
 let fileSyncMode = 'pending'; // 'fetch' | 'manual' | 'pending'
 let filePollTimer = null;
 
@@ -743,6 +752,7 @@ let filePollTimer = null;
 // re-export each file in its own original shape.
 let rawCustomersData = null;
 let rawSankData = null;
+let rawKothData = null;
 
 function isValidRegister(parsed){
   return parsed && Array.isArray(parsed.customers) && Array.isArray(parsed.packages);
@@ -760,31 +770,36 @@ function tagCustomers(list, file){
 function tagVillages(list, file){
   return (list || []).map(v => ({ ...v, _file: file }));
 }
-/* sank.json uses "id" (plain running number) + "box_no" (the actual
-   box/meter number) instead of the single "box_id" field the rest of
-   the app keys off of. Normalize it here so cards, search, edit and
-   delete all work the same way regardless of source file. */
-function normalizeSankCustomer(c){
+/* sank.json / koth.json use "id" (plain running number) + "box_no"
+   (the actual box/meter number) instead of the single "box_id" field
+   the rest of the app keys off of. Normalize here so cards, search,
+   edit and delete all work the same way regardless of source file. */
+function normalizeLegacyCustomer(c){
   const boxId = (c.box_no && String(c.box_no).trim()) ? c.box_no : c.id;
   return { ...c, box_id: boxId };
 }
-function mergeRegisters(customersData, sankData){
+const normalizeSankCustomer = normalizeLegacyCustomer; // kept for backwards compatibility
+function mergeRegisters(customersData, sankData, kothData){
   const base = customersData || DEFAULT_DATA;
   const sank = sankData || { packages: [], villages: [], customers: [] };
+  const koth = kothData || { packages: [], villages: [], customers: [] };
 
   // Packages: merge by id, customers.json's version wins on conflict.
   const pkgMap = new Map();
   (base.packages || []).forEach(p => pkgMap.set(p.id, p));
   (sank.packages || []).forEach(p => { if (!pkgMap.has(p.id)) pkgMap.set(p.id, p); });
+  (koth.packages || []).forEach(p => { if (!pkgMap.has(p.id)) pkgMap.set(p.id, p); });
 
   // Villages: merge by villageId, tag each with its source file.
   const villageMap = new Map();
   tagVillages(base.villages, JSON_FILE_NAME).forEach(v => villageMap.set(v.villageId, v));
   tagVillages(sank.villages, SANK_FILE_NAME).forEach(v => { if (!villageMap.has(v.villageId)) villageMap.set(v.villageId, v); });
+  tagVillages(koth.villages, KOTH_FILE_NAME).forEach(v => { if (!villageMap.has(v.villageId)) villageMap.set(v.villageId, v); });
 
   const customers = [
     ...tagCustomers(base.customers, JSON_FILE_NAME),
-    ...tagCustomers((sank.customers || []).map(normalizeSankCustomer), SANK_FILE_NAME)
+    ...tagCustomers((sank.customers || []).map(normalizeLegacyCustomer), SANK_FILE_NAME),
+    ...tagCustomers((koth.customers || []).map(normalizeLegacyCustomer), KOTH_FILE_NAME)
   ];
 
   return {
@@ -797,22 +812,26 @@ function stripFileTag(obj){
   const { _file, ...rest } = obj;
   return rest;
 }
-function stripSankNormalization(obj){
+function stripLegacyNormalization(obj){
   const { _file, box_id, ...rest } = obj;
   return rest;
 }
-/* Rebuild the two source-file objects (in their original shape) from
-   the current merged appData — used for export & GitHub save. */
+const stripSankNormalization = stripLegacyNormalization; // kept for backwards compatibility
+/* Rebuild the three source-file objects (in their original shape)
+   from the current merged appData — used for export & GitHub save. */
 function splitAppDataByFile(){
-  const custCustomers = appData.customers.filter(c => c._file !== SANK_FILE_NAME).map(stripFileTag);
-  const sankCustomers  = appData.customers.filter(c => c._file === SANK_FILE_NAME).map(stripSankNormalization);
-  const custVillages = appData.villages.filter(v => v._file !== SANK_FILE_NAME).map(stripFileTag);
+  const custCustomers = appData.customers.filter(c => c._file !== SANK_FILE_NAME && c._file !== KOTH_FILE_NAME).map(stripFileTag);
+  const sankCustomers  = appData.customers.filter(c => c._file === SANK_FILE_NAME).map(stripLegacyNormalization);
+  const kothCustomers  = appData.customers.filter(c => c._file === KOTH_FILE_NAME).map(stripLegacyNormalization);
+  const custVillages = appData.villages.filter(v => v._file !== SANK_FILE_NAME && v._file !== KOTH_FILE_NAME).map(stripFileTag);
   const sankVillages  = appData.villages.filter(v => v._file === SANK_FILE_NAME).map(stripFileTag);
+  const kothVillages  = appData.villages.filter(v => v._file === KOTH_FILE_NAME).map(stripFileTag);
   const packages = appData.packages.map(p => ({ ...p }));
 
   const customersJson = { packages, villages: custVillages, customers: custCustomers };
   const sankJson = { packages, villages: sankVillages, customers: sankCustomers };
-  return { customersJson, sankJson };
+  const kothJson = { packages, villages: kothVillages, customers: kothCustomers };
+  return { customersJson, sankJson, kothJson };
 }
 
 function setFileSyncStatus(text, kind){
@@ -836,19 +855,21 @@ async function fetchJsonFile(fileName){
 async function fetchCustomersJson(silent){
   const custResult = await fetchJsonFile(JSON_FILE_NAME).catch(err => ({ error: err }));
   const sankResult = await fetchJsonFile(SANK_FILE_NAME).catch(err => ({ error: err }));
+  const kothResult = await fetchJsonFile(KOTH_FILE_NAME).catch(err => ({ error: err }));
 
-  if (custResult.error && sankResult.error){
+  if (custResult.error && sankResult.error && kothResult.error){
     if (!silent){
-      setFileSyncStatus(`Couldn't auto-load ${JSON_FILE_NAME} or ${SANK_FILE_NAME} (${custResult.error.message}). Use the "📂 Load…" buttons instead.`, 'warn');
+      setFileSyncStatus(`Couldn't auto-load ${JSON_FILE_NAME}, ${SANK_FILE_NAME} or ${KOTH_FILE_NAME} (${custResult.error.message}). Use the "📂 Load…" buttons instead.`, 'warn');
     }
     return false;
   }
 
   const custChanged = !custResult.error && custResult.text !== lastLoadedJsonText;
   const sankChanged = !sankResult.error && sankResult.text !== lastLoadedSankText;
+  const kothChanged = !kothResult.error && kothResult.text !== lastLoadedKothText;
 
-  if (!custChanged && !sankChanged){
-    if (!silent) setFileSyncStatus(`Synced with ${JSON_FILE_NAME}${sankResult.error ? '' : ' + ' + SANK_FILE_NAME}`, 'ok');
+  if (!custChanged && !sankChanged && !kothChanged){
+    if (!silent) setFileSyncStatus(`Synced with ${JSON_FILE_NAME}${sankResult.error ? '' : ' + ' + SANK_FILE_NAME}${kothResult.error ? '' : ' + ' + KOTH_FILE_NAME}`, 'ok');
     return true; // nothing changed
   }
   if (dirty){
@@ -858,12 +879,16 @@ async function fetchCustomersJson(silent){
 
   if (!custResult.error){ rawCustomersData = custResult.parsed; lastLoadedJsonText = custResult.text; }
   if (!sankResult.error){ rawSankData = sankResult.parsed; lastLoadedSankText = sankResult.text; }
+  if (!kothResult.error){ rawKothData = kothResult.parsed; lastLoadedKothText = kothResult.text; }
 
-  appData = mergeRegisters(rawCustomersData, rawSankData);
+  appData = mergeRegisters(rawCustomersData, rawSankData, rawKothData);
   fileSyncMode = 'fetch';
   render();
-  const note = sankResult.error ? ` (${SANK_FILE_NAME} not found — that village won't show until it's loaded)` : '';
-  setFileSyncStatus(`Synced with ${JSON_FILE_NAME} + ${SANK_FILE_NAME}${note} · ${new Date().toLocaleTimeString()}`, sankResult.error ? 'warn' : 'ok');
+  const missing = [];
+  if (sankResult.error) missing.push(SANK_FILE_NAME);
+  if (kothResult.error) missing.push(KOTH_FILE_NAME);
+  const note = missing.length ? ` (${missing.join(', ')} not found — that village won't show until it's loaded)` : '';
+  setFileSyncStatus(`Synced with ${JSON_FILE_NAME} + ${SANK_FILE_NAME} + ${KOTH_FILE_NAME}${note} · ${new Date().toLocaleTimeString()}`, missing.length ? 'warn' : 'ok');
   return true;
 }
 
@@ -878,7 +903,7 @@ async function initJsonFileSync(){
     startFilePolling();
   } else {
     fileSyncMode = 'manual';
-    setFileSyncStatus(`Using built-in data — pick your ${JSON_FILE_NAME} / ${SANK_FILE_NAME} to load them`, 'warn');
+    setFileSyncStatus(`Using built-in data — pick your ${JSON_FILE_NAME} / ${SANK_FILE_NAME} / ${KOTH_FILE_NAME} to load them`, 'warn');
   }
 }
 
@@ -892,11 +917,14 @@ function loadJsonFromFile(file, target){
       if (target === 'sank'){
         rawSankData = parsed;
         lastLoadedSankText = text;
+      } else if (target === 'koth'){
+        rawKothData = parsed;
+        lastLoadedKothText = text;
       } else {
         rawCustomersData = parsed;
         lastLoadedJsonText = text;
       }
-      appData = mergeRegisters(rawCustomersData, rawSankData);
+      appData = mergeRegisters(rawCustomersData, rawSankData, rawKothData);
       dirty = false;
       fileSyncMode = 'manual';
       if (filePollTimer) clearInterval(filePollTimer);
@@ -1259,7 +1287,7 @@ function toggleStatus(id){
 
 function generateCustomerId(){
   const nums = appData.customers
-    .filter(c => c._file !== SANK_FILE_NAME)
+    .filter(c => c._file !== SANK_FILE_NAME && c._file !== KOTH_FILE_NAME)
     .map(c => parseInt(String(c.box_id).replace(/\D/g,''), 10))
     .filter(n => !isNaN(n));
   const next = (nums.length ? Math.max(...nums) : 0) + 1;
@@ -1274,8 +1302,19 @@ function generateSankId(){
   const next = (nums.length ? Math.max(...nums) : 0) + 1;
   return String(next);
 }
+function generateKothId(){
+  // koth.json uses plain incrementing integers as box_ids ("1", "2", …), same as sank.json
+  const nums = appData.customers
+    .filter(c => c._file === KOTH_FILE_NAME)
+    .map(c => parseInt(String(c.box_id), 10))
+    .filter(n => !isNaN(n));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return String(next);
+}
 function fileForVillage(villageId){
-  return villageId === SANK_VILLAGE_ID ? SANK_FILE_NAME : JSON_FILE_NAME;
+  if (villageId === SANK_VILLAGE_ID) return SANK_FILE_NAME;
+  if (villageId === KOTH_VILLAGE_ID) return KOTH_FILE_NAME;
+  return JSON_FILE_NAME;
 }
 
 function openCustomerModal(id=null){
@@ -1341,7 +1380,7 @@ function handleCustomerSubmit(e){
     Object.assign(c, data);
     c._file = targetFile; // move between customers.json / sank.json if village changed
   } else {
-    data.box_id = targetFile === SANK_FILE_NAME ? generateSankId() : generateCustomerId();
+    data.box_id = targetFile === SANK_FILE_NAME ? generateSankId() : targetFile === KOTH_FILE_NAME ? generateKothId() : generateCustomerId();
     data._file = targetFile;
     appData.customers.push(data);
   }
@@ -1468,6 +1507,7 @@ function openSettingsModal(){
   document.getElementById('ghRepo').value = ghConfig.repo;
   document.getElementById('ghPath').value = ghConfig.path;
   document.getElementById('ghPathSank').value = ghConfig.sankPath;
+  document.getElementById('ghPathKoth').value = ghConfig.kothPath;
   document.getElementById('ghBranch').value = ghConfig.branch;
   document.getElementById('ghToken').value = ghConfig.token;
   document.getElementById('settingsModal').classList.remove('hidden');
@@ -1481,6 +1521,7 @@ function readGhFormToConfig(){
   ghConfig.repo = document.getElementById('ghRepo').value.trim();
   ghConfig.path = document.getElementById('ghPath').value.trim() || 'customers.json';
   ghConfig.sankPath = document.getElementById('ghPathSank').value.trim() || 'sank.json';
+  ghConfig.kothPath = document.getElementById('ghPathKoth').value.trim() || 'koth.json';
   ghConfig.branch = document.getElementById('ghBranch').value.trim() || 'main';
   ghConfig.token = document.getElementById('ghToken').value.trim();
 }
@@ -1519,7 +1560,7 @@ async function loadFromGitHub(){
     return;
   }
   persistGhConfig();
-  ghLog(`Loading ${ghConfig.path} + ${ghConfig.sankPath} from ${ghConfig.owner}/${ghConfig.repo}@${ghConfig.branch}…`);
+  ghLog(`Loading ${ghConfig.path} + ${ghConfig.sankPath} + ${ghConfig.kothPath} from ${ghConfig.owner}/${ghConfig.repo}@${ghConfig.branch}…`);
   try {
     const custResult = await ghFetchFile(ghConfig.path);
     currentSha = custResult.sha;
@@ -1529,9 +1570,14 @@ async function loadFromGitHub(){
     currentShaSank = sankResult.sha;
     if (!sankResult.parsed) ghLog(`${ghConfig.sankPath} not found in repo yet — it will be created the first time you save.`);
 
+    const kothResult = await ghFetchFile(ghConfig.kothPath);
+    currentShaKoth = kothResult.sha;
+    if (!kothResult.parsed) ghLog(`${ghConfig.kothPath} not found in repo yet — it will be created the first time you save.`);
+
     rawCustomersData = custResult.parsed || DEFAULT_DATA;
     rawSankData = sankResult.parsed || { packages: [], villages: [], customers: [] };
-    appData = mergeRegisters(rawCustomersData, rawSankData);
+    rawKothData = kothResult.parsed || { packages: [], villages: [], customers: [] };
+    appData = mergeRegisters(rawCustomersData, rawSankData, rawKothData);
     dirty = false;
     render();
     updateSyncPill();
@@ -1574,13 +1620,15 @@ async function saveToGitHub(){
     return;
   }
   persistGhConfig();
-  ghLog(`Saving to ${ghConfig.owner}/${ghConfig.repo} — ${ghConfig.path} & ${ghConfig.sankPath}…`);
+  ghLog(`Saving to ${ghConfig.owner}/${ghConfig.repo} — ${ghConfig.path} & ${ghConfig.sankPath} & ${ghConfig.kothPath}…`);
   try {
-    const { customersJson, sankJson } = splitAppDataByFile();
+    const { customersJson, sankJson, kothJson } = splitAppDataByFile();
     currentSha = await ghPutFile(ghConfig.path, customersJson, currentSha);
     ghLog(`Saved ${ghConfig.path} (${customersJson.customers.length} customers).`);
     currentShaSank = await ghPutFile(ghConfig.sankPath, sankJson, currentShaSank);
     ghLog(`Saved ${ghConfig.sankPath} (${sankJson.customers.length} customers).`);
+    currentShaKoth = await ghPutFile(ghConfig.kothPath, kothJson, currentShaKoth);
+    ghLog(`Saved ${ghConfig.kothPath} (${kothJson.customers.length} customers).`);
     dirty = false;
     updateSyncPill();
     ghLog('All files saved successfully.');
@@ -1602,11 +1650,12 @@ function downloadJson(obj, filename){
 }
 
 function exportJson(){
-  const { customersJson, sankJson } = splitAppDataByFile();
+  const { customersJson, sankJson, kothJson } = splitAppDataByFile();
   downloadJson(customersJson, JSON_FILE_NAME);
-  // Stagger the second download slightly — some browsers block
-  // simultaneous multi-file downloads triggered in the same tick.
+  // Stagger the downloads slightly — some browsers block simultaneous
+  // multi-file downloads triggered in the same tick.
   setTimeout(() => downloadJson(sankJson, SANK_FILE_NAME), 300);
+  setTimeout(() => downloadJson(kothJson, KOTH_FILE_NAME), 600);
 }
 
 function copyPhone(phone){
@@ -1697,6 +1746,12 @@ function bindEvents(){
   document.getElementById('sankFileInput').addEventListener('change', (e)=>{
     const file = e.target.files && e.target.files[0];
     if (file) loadJsonFromFile(file, 'sank');
+    e.target.value = '';
+  });
+  document.getElementById('loadKothBtn').addEventListener('click', ()=>document.getElementById('kothFileInput').click());
+  document.getElementById('kothFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (file) loadJsonFromFile(file, 'koth');
     e.target.value = '';
   });
 
