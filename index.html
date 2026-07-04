@@ -42,6 +42,7 @@
   /* Topbar */
   .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
   .brand{display:flex;align-items:center;gap:14px;}
+  .brand img{flex-shrink:0;object-fit:contain;border-radius:6px;}
   .brand h1{font-family:var(--font-display);font-size:28px;font-weight:600;margin:0;color:var(--primary);letter-spacing:-0.5px;}
   .brand p{margin:2px 0 0;font-size:13px;color:var(--muted);}
   .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -444,12 +445,7 @@
 
   <header class="topbar">
     <div class="brand">
-      <svg width="38" height="38" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="21" width="6" height="12" rx="1.5" fill="#E08E2C"/>
-        <rect x="11" y="15" width="6" height="18" rx="1.5" fill="#1E4A45"/>
-        <rect x="20" y="9" width="6" height="24" rx="1.5" fill="#1E4A45"/>
-        <rect x="29" y="3" width="6" height="30" rx="1.5" fill="#E08E2C"/>
-      </svg>
+      <img src="tv.png" width="75" height="75" alt="Sri Kamakshi Jagan Cable Network logo">
       <div>
         <h1>Sri Kamakshi Jagan <br>Cable Network</h1>
         <p><b>ACT</b> Cable connection register</p>
@@ -474,12 +470,6 @@
       <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none;">
       <input type="file" id="sankFileInput" accept="application/json,.json" style="display:none;">
       <input type="file" id="kothFileInput" accept="application/json,.json" style="display:none;">
-      <button class="btn btn-ghost" id="loadJsonBtn" title="Pick the customers.json file from your computer">📂 Load customers.json</button>
-      <button class="btn btn-ghost" id="loadSankBtn" title="Pick the sank.json file from your computer">📂 Load sank.json</button>
-      <button class="btn btn-ghost" id="loadKothBtn" title="Pick the koth.json file from your computer">📂 Load koth.json</button>
-      <button class="btn btn-ghost" id="reloadJsonBtn" title="Re-fetch customers.json, sank.json and koth.json from this page's folder">↻ Reload</button>
-      <button class="btn btn-ghost" id="exportBtn">⬇ Export JSON</button>
-      <button class="btn btn-ghost" id="settingsBtn">⚙ GitHub sync</button>
     </div>
   </header>
 
@@ -508,6 +498,12 @@
         <rect x="9" y="9" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.6"/>
       </svg>
       Packages
+    </button>
+    <button class="filter-btn" id="ghDrawerBtn" title="GitHub &amp; file actions">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
     </button>
     <span class="spacer"></span>
     <button class="filter-btn" id="filterBtn" title="Search &amp; filter">
@@ -642,6 +638,30 @@
   </div>
   <div class="drawer-footer">
     <button type="button" class="btn btn-secondary" id="addPackageBtn" style="flex:1">+ Add package</button>
+  </div>
+</aside>
+
+<aside class="drawer" id="ghDrawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">GitHub &amp; Files</h2>
+    <button class="drawer-close" id="closeGhDrawerBtn" title="Close">&#x2715;</button>
+  </div>
+  <div class="drawer-body">
+    <p class="hint" style="margin:0">Load a register from your computer, re-check the files on disk, export, or connect to GitHub.</p>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label class="drawer-label">Local files</label>
+      <button type="button" class="btn btn-ghost" id="loadJsonBtn" style="text-align:left;width:100%">📂 Load customers.json</button>
+      <button type="button" class="btn btn-ghost" id="loadSankBtn" style="text-align:left;width:100%">📂 Load sank.json</button>
+      <button type="button" class="btn btn-ghost" id="loadKothBtn" style="text-align:left;width:100%">📂 Load koth.json</button>
+      <button type="button" class="btn btn-ghost" id="reloadJsonBtn" style="text-align:left;width:100%">↻ Reload from disk</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:8px;">
+      <label class="drawer-label">Sync</label>
+      <button type="button" class="btn btn-ghost" id="exportBtn" style="text-align:left;width:100%">⬇ Export JSON</button>
+      <button type="button" class="btn btn-secondary" id="settingsBtn" style="text-align:left;width:100%">⚙ GitHub sync settings</button>
+    </div>
   </div>
 </aside>
 
@@ -1503,6 +1523,7 @@ function persistGhConfig(){
 }
 
 function openSettingsModal(){
+  closeDrawer('ghDrawer');
   document.getElementById('ghOwner').value = ghConfig.owner;
   document.getElementById('ghRepo').value = ghConfig.repo;
   document.getElementById('ghPath').value = ghConfig.path;
@@ -1758,6 +1779,10 @@ function bindEvents(){
   document.querySelectorAll('.modal-overlay').forEach(ov=>{
     ov.addEventListener('click', (e)=>{ if (e.target === ov) ov.classList.add('hidden'); });
   });
+
+  // GitHub & Files drawer
+  document.getElementById('ghDrawerBtn').addEventListener('click', ()=>openDrawer('ghDrawer'));
+  document.getElementById('closeGhDrawerBtn').addEventListener('click', ()=>closeDrawer('ghDrawer'));
 }
 
 restoreGhConfig();
@@ -1851,6 +1876,9 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); })
 
 /* ── Customer drawer close btn ── */
 document.getElementById('cancelCustomerBtn').addEventListener('click', closeCustomerModal);
+
+/* ── Packages drawer close btn ── */
+document.getElementById('closePackagesBtn').addEventListener('click', closePackagesModal);
 </script>
 </body>
 </html>
